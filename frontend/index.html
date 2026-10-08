@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>JalSanket — Network overview</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to monitoring</a>
+    <aside class="sidebar">
+      <div class="brand">
+        <strong lang="hi">जलसंकेत</strong><span>JalSanket</span
+        ><small>Early signals from beneath the ground.</small>
+      </div>
+      <hr />
+      <p class="eyebrow">MONITORING</p>
+      <nav aria-label="Monitoring">
+        <a class="active" href="#main">Network overview</a
+        ><a href="#queue">Stations</a><a href="#evidence">Evidence preview</a
+        ><a href="#quality">Data quality</a>
+      </nav>
+      <div class="sidebar-foot">
+        LOCAL PROTOTYPE<br />Historical review · v0<br /><span
+          >AWS deployment pending</span
+        >
+      </div>
+    </aside>
+    <main id="main">
+      <header>
+        <div>
+          <p class="eyebrow blue">GROUNDWATER MONITORING NETWORK</p>
+          <h1>Where should I investigate first?</h1>
+          <p>Evidence-first review across a bounded Maharashtra pilot</p>
+        </div>
+        <span class="chip dark">OFFICIAL HISTORICAL DATA</span>
+      </header>
+      <div id="source" class="source" role="status">
+        Connecting to the local evidence API…
+      </div>
+      <div id="error" class="error" role="alert" hidden>
+        <h2>Evidence unavailable</h2>
+        <p id="error-message"></p>
+        <button id="retry">Retry connection</button>
+      </div>
+      <section class="metrics" aria-label="Network summary">
+        <article>
+          <h2>SPIKE CANDIDATES</h2>
+          <strong id="flag-count" class="red">—</strong>
+          <p>Flagged observations in the review window</p>
+        </article>
+        <article>
+          <h2>STATIONS REVIEWED</h2>
+          <strong id="station-count" class="blue">—</strong>
+          <p>Internal groupings, not official station IDs</p>
+        </article>
+        <article>
+          <h2>ENVIRONMENTAL CHANGE POSSIBLE</h2>
+          <strong id="environment-count" class="green">—</strong>
+          <p>Requires affirmative independent evidence</p>
+        </article>
+        <article>
+          <h2>UNCERTAIN / INSUFFICIENT</h2>
+          <strong id="abstain-count" class="amber">—</strong>
+          <p>Stations where interpretation is withheld</p>
+        </article>
+      </section>
+      <div class="overview">
+        <section id="queue" class="panel">
+          <div class="panel-heading">
+            <p class="eyebrow">PRIORITY INVESTIGATION QUEUE</p>
+            <h2>Review these stations first</h2>
+            <p>
+              Ordered by candidate count, then station name. Review order is not
+              hydrological danger.
+            </p>
+            <label for="station-filter">Find a station</label
+            ><input
+              id="station-filter"
+              type="search"
+              placeholder="Station or district"
+              autocomplete="off"
+            />
+          </div>
+          <div id="queue-list" aria-live="polite">
+            <p class="placeholder">Loading verified snapshot…</p>
+          </div>
+          <p class="panel-footer">
+            Experimental spike screening only. Flatline and dropout are not yet
+            implemented. No live-data or physical-cause claim.
+          </p>
+        </section>
+        <aside class="rail">
+          <section class="panel context">
+            <p class="eyebrow">GEOGRAPHIC CONTEXT</p>
+            <h2>Maharashtra pilot</h2>
+            <p id="districts">Loading source districts…</p>
+            <p class="muted">
+              District/list context only. Coordinate reference and physical
+              station continuity remain unverified.
+            </p>
+            <div class="coverage">
+              <span>REVIEW WINDOW · SOURCE CLOCK</span
+              ><strong>01 Jan — 31 Mar 2024</strong
+              ><small>Timezone unverified · historical replay</small>
+            </div>
+          </section>
+          <section class="panel legend">
+            <p class="eyebrow">ASSESSMENT STATES</p>
+            <p>
+              <img
+                src="/assets/telemetry.svg"
+                alt=""
+                width="10"
+                height="10"
+              />Telemetry evidence
+            </p>
+            <p>
+              <img
+                src="/assets/environment.svg"
+                alt=""
+                width="10"
+                height="10"
+              />Environmental change possible
+            </p>
+            <p>
+              <img
+                src="/assets/uncertain.svg"
+                alt=""
+                width="10"
+                height="10"
+              />Uncertain — abstain
+            </p>
+            <p>
+              <img
+                src="/assets/insufficient.svg"
+                alt=""
+                width="10"
+                height="10"
+              />Insufficient evidence
+            </p>
+          </section>
+          <section class="guidance">
+            <p class="eyebrow blue">OPERATOR QUESTION</p>
+            <h2>What deserves attention first?</h2>
+            <p>
+              Inspect the observation, the evidence gaps and the next check
+              before interpreting a cause.
+            </p>
+          </section>
+        </aside>
+      </div>
+      <section
+        id="evidence"
+        class="panel evidence"
+        aria-live="polite"
+        aria-busy="false"
+      >
+        <div class="panel-heading">
+          <p class="eyebrow">EVIDENCE PREVIEW · FIRST VERTICAL SLICE</p>
+          <h2 id="evidence-title">Select a station to review its evidence</h2>
+          <p>
+            The dedicated Station Detail and Evidence Detail screens follow this
+            milestone.
+          </p>
+        </div>
+        <div id="evidence-body"></div>
+      </section>
+      <footer>
+        CGWB observations · published by NWIC / NWDP. JalSanket analysis is
+        derived and experimental.<br />This is not a diagnosis of physical
+        sensor failure.
+      </footer>
+    </main>
+  </body>
+</html>

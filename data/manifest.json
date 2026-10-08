@@ -1,0 +1,26 @@
+{
+  "snapshot_id": "nwdp-cb74716463c3eba8",
+  "resource_id": "2da4e849-2249-4e15-a609-a6166e30a300",
+  "source_url": "https://nwdp.nwic.gov.in/dataset/3782ba15-9b12-46a8-ae44-410b1f84020e/resource/2da4e849-2249-4e15-a609-a6166e30a300/download/gwl_tel_6_hourly_cgwb_mh_2021_2025.csv",
+  "resource_url": "https://www.nwdp.nwic.gov.in/en/dataset/ground-water-level-telemetry-daily-cgwb-as-assam/resource/2da4e849-2249-4e15-a609-a6166e30a300",
+  "producer": "Central Ground Water Board (CGWB)",
+  "publisher": "NWIC / National Water Data Portal",
+  "retrieved_at_utc": "2026-10-08T06:56:40.367932Z",
+  "sha256": "cb74716463c3eba8ac2857b18715c774748330b238b50242ef11c111f377bfd7",
+  "byte_count": 55562132,
+  "full_file": true,
+  "terms_url": "https://www.nwdp.nwic.gov.in/en/footer/copyrightPolicy",
+  "transformations": [
+    "Raw CSV preserved byte-for-byte; finite numeric parsing without sign conversion",
+    "Source clock parsed without timezone conversion",
+    "Five feasibility-selected labels, 2024-01-01 inclusive to 2024-04-01 exclusive",
+    "Station grouping uses exact label, agency, state, district and coordinate tokens"
+  ],
+  "exclusions": [
+    "Other stations and out-of-window timestamps excluded from this bounded pilot",
+    "Malformed selected-station timestamps retained for quality audit, cannot be assigned to window",
+    "Conflicting duplicate timestamp values withheld from analytics",
+    "Q1 2024 was inspected before the event; not an untouched evaluation holdout"
+  ],
+  "data_mode": "OFFICIAL_HISTORICAL"
+}

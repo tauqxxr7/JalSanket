@@ -1,0 +1,14 @@
+{
+  "name": "jalsanket-browser-checks",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser verification for the static JalSanket frontend",
+  "scripts": {
+    "test:e2e": "node scripts/check-browser.cjs",
+    "check": "node --check frontend/app.js",
+    "build": "node scripts/build.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

@@ -1,0 +1,1 @@
+"""JalSanket local vertical slice."""
