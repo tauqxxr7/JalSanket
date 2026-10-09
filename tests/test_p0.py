@@ -9,7 +9,8 @@ from backend.eligibility import DetectorContext
 from backend.flatline import detect_flatline
 from backend.models import DetectorResult, Verification
 from backend.triage import Corroboration, triage
-from test_core import records
+from backend.evidence import build_evidence
+from test_core import records, station, provenance
 
 
 def context():
@@ -134,3 +135,44 @@ def test_acquisition_diagnostics_must_be_verified():
     assert triage([result()],facts).assessment=='UNCERTAIN'
     facts=facts.model_copy(update={'acquisition_diagnostics':Verification.VERIFIED})
     assert triage([result()],facts).assessment=='TELEMETRY_EVIDENCE'
+
+
+def test_evidence_integrates_verified_pattern_context_and_row_citations():
+    rows=records(30)
+    for i in range(22,30):
+        rows[i]=rows[i].model_copy(update={'raw_numeric_value':-9.8,'measurement_raw':'-9.8'})
+    package=build_evidence(station(),rows,provenance(),context())
+    assert package.detectors[1].outcome=='FLAG'
+    assert package.assessment=='TELEMETRY_EVIDENCE'
+    assert any('FLATLINE: FLAG' in item for item in package.supporting_evidence)
+    cited={row.observation_id for row in package.relevant_history} | {package.observation.observation_id}
+    assert set(package.detectors[1].baseline_ids).issubset(cited)
+    assert 'logger' in package.next_check.action.lower()
+
+
+def test_real_short_history_api_abstains_with_honest_subset_provenance():
+    from fastapi.testclient import TestClient
+    from scripts.short_history_app import app
+    with TestClient(app) as client:
+        network=client.get('/api/network').json()
+        assert network['provenance']['data_mode']=='OFFICIAL_HISTORICAL_TEST_SUBSET'
+        key=network['stations'][0]['station_group_key']
+        detail=client.get('/api/stations/'+key).json()
+        evidence=client.get('/api/stations/'+key+'/evidence').json()
+        assert len(detail['observations'])==3
+        assert detail['observations'][0]['measurement_raw']=='-10.54'
+        assert evidence['assessment']=='INSUFFICIENT_EVIDENCE'
+        assert evidence['detectors'][0]['eligibility']=='INSUFFICIENT_HISTORY'
+        assert evidence['detectors'][0]['outcome'] is None
+        assert len(evidence['relevant_history'])==2
+        assert evidence['next_check']['evidence_gap_addressed']
+
+
+def test_dropout_evidence_contains_missing_slot_and_acquisition_next_check():
+    rows=records(30)
+    missing=rows.pop(10)
+    package=build_evidence(station(),rows,provenance(),context())
+    assert package.detectors[2].affected_source_times==[missing.source_time.isoformat()]
+    assert package.assessment=='TELEMETRY_EVIDENCE'
+    assert any('DROPOUT: FLAG' in item for item in package.supporting_evidence)
+    assert 'published portal record' in package.next_check.action

@@ -88,3 +88,14 @@ No held-out evaluation is complete; no accuracy, latency benchmark or real-failu
 Local controls include bounded fixed reads, strict schemas, checksum verification, escaped DOM text, CSP, sanitized request-ID logs and explicit errors. Dependency and secret-scan results are scoped in [verification](docs/VERIFICATION.md). No public hosting, rate limits, AWS IAM denial checks or production-security claim exists yet.
 
 Submission deadline is October 11, 8:00 PM IST in the [October 6 organizer announcement](https://www.wemakedevs.org/blogs/what-is-happening-in-delhi-on-10-october); verify against the event form before delivery. Demo link: **not recorded yet**. [AI disclosure](docs/AI_USAGE.md) · [Attributions](docs/ATTRIBUTIONS.md) · [Design and contract decisions](docs/DECISIONS.md).
+
+
+### Browser verification cases
+
+Keep the normal app running (`./scripts/start-local.ps1`). In a second terminal,
+start the test-only API with `./.venv/Scripts/python.exe -m uvicorn scripts.short_history_app:app --host 127.0.0.1 --port 8767`.
+Set `$env:JALSANKET_SHORT_HISTORY_URL='http://127.0.0.1:8767'` before `npm run test:e2e`.
+The second server uses three unchanged official rows, explicitly labels the
+history cut as a TEST SUBSET, and verifies insufficient evidence. It is never
+imported by the normal application. `JALSANKET_BASE_URL` overrides the normal
+8766 URL when testing another local port. Stop the test-only server afterward.

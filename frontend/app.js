@@ -84,11 +84,6 @@ async function selectStation(key) {
   byId('evidence-title').textContent = 'Loading evidence…';
   body.replaceChildren(element("p", "Loading evidence…", "placeholder"));
   byId("evidence").setAttribute("aria-busy", "true");
-  document
-    .querySelectorAll(".queue-row")
-    .forEach((row) =>
-      row.setAttribute("aria-pressed", String(row.dataset.key === key)),
-    );
   try {
     const data = await get(`/api/stations/${encodeURIComponent(key)}/evidence`);
     if (request !== selection) return;

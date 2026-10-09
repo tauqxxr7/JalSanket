@@ -1,3 +1,13 @@
+# October 9 P0 verification update
+
+Final backend run: **46 passed**, one dependency warning, 8.31 seconds. Production build and JS syntax pass; npm audit reports zero vulnerabilities.
+
+- Clean local HEAD at entry: f20ce804b2e224f731c6927c878f0059118217a4. GitHub's commits API returns HTTP 409 (repository empty); no pushed commit exists to verify. Authenticated user check returns 401 and Git credential-helper launch is denied in this environment. No force push or credentials exposure.
+- Supported-browser Playwright locators now pass the fresh full Network → Station → Evidence journey against the real API, including UNCERTAIN / ABSTAIN and NextCheck. A separate, prominently labelled OFFICIAL HISTORICAL TEST SUBSET uses three unchanged source rows and passes the same journey to INSUFFICIENT EVIDENCE / history-recovery NextCheck.
+- Standalone `npm run test:e2e` still fails before test execution because Chrome's crash subprocess cannot launch. This is not counted as a suite pass. The saved suite now requires both the normal and short-history test server.
+- EvidencePackage now integrates FLATLINE/DROPOUT statistics and source-row citations when an explicitly verified DetectorContext is supplied. Default official-data execution still withholds these detectors because the required facts are unverified. It never promotes a test configuration to official metadata.
+- No held-out performance evaluation, complete P0 freeze, AWS deployment or spending is claimed. AWS CLI and approved non-root profile remain unavailable; follow AWS-ACCESS.
+
 # Current verification — October 9, 2026
 
 - Backend: **43 passed, 1 dependency deprecation warning**, 6.01 seconds in this cycle.

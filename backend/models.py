@@ -30,7 +30,7 @@ class Provenance(Contract):
     terms_url: str
     transformations: list[str]
     exclusions: list[str]
-    data_mode: Literal["OFFICIAL_HISTORICAL"] = "OFFICIAL_HISTORICAL"
+    data_mode: Literal["OFFICIAL_HISTORICAL", "OFFICIAL_HISTORICAL_TEST_SUBSET"] = "OFFICIAL_HISTORICAL"
 
     @model_validator(mode="after")
     def known_retrieval_instant(self):

@@ -14,7 +14,7 @@ def detect(records: list[Observation], index: int) -> DetectorResult:
     history = records[max(0, index - LOOKBACK):index]
     base = dict(detector="SPIKE", candidate_id=candidate.observation_id)
     if len(history) < MIN_HISTORY:
-        return DetectorResult(**base, eligibility="INSUFFICIENT_HISTORY", reason="At least 20 prior comparable acquisitions required by experimental configuration.")
+        return DetectorResult(**base, eligibility="INSUFFICIENT_HISTORY", reason="At least 20 prior comparable acquisitions required by experimental configuration.", baseline_ids=[row.observation_id for row in history])
     segment = history + [candidate]
     if any(row.source_time is None or row.raw_numeric_value is None or row.issues for row in segment):
         return DetectorResult(**base, eligibility="UNAVAILABLE", reason="Invalid or suspect input in local reference segment.")

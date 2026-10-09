@@ -90,7 +90,7 @@ def create_app(provider=None):
     @app.get("/api/health")
     def health():
         ensure_source()
-        return {"status": "ready", "mode": "OFFICIAL_HISTORICAL", "aws_deployed": False}
+        return {"status": "ready", "mode": app.state.provenance.data_mode, "aws_deployed": False}
 
     @app.get("/api/network", response_model=NetworkResponse)
     def network(request: Request):
