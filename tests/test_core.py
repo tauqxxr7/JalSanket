@@ -149,7 +149,7 @@ def test_exact_duplicate_collapses_with_audit_count():
     assert quality.conflicting_timestamps == 0
 
 
-def test_unimplemented_detectors_have_no_normal_result():
+def test_metadata_gated_detectors_have_no_normal_result():
     evidence = build_evidence(station(), records(), provenance())
     for detector in evidence.detectors[1:]:
         assert detector.eligibility == 'UNAVAILABLE'
@@ -187,6 +187,13 @@ def test_api_network_evidence_bounds_headers():
         assert response.headers['x-request-id']
         assert "frame-ancestors 'none'" in response.headers['content-security-policy']
         assert client.get('/api/stations/unit-group/evidence').status_code == 200
+        history = client.get('/api/stations/unit-group')
+        assert history.status_code == 200
+        assert len(history.json()['observations']) == 30
+        assert len(history.json()['plot_observations']) == 30
+        assert history.json()['flagged_ids'] == []
+        assert client.get('/api/stations/unknown').status_code == 404
+        assert client.get('/api/stations/unit-group?limit=unbounded').status_code == 422
         assert client.get('/api/stations/unknown/evidence').status_code == 404
         assert client.get('/api/network?url=https://evil.example').status_code == 422
         assert client.post('/api/network').status_code == 405

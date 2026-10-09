@@ -1,3 +1,21 @@
+# Current verification — October 9, 2026
+
+- Backend: **43 passed, 1 dependency deprecation warning**, 6.01 seconds in this cycle.
+- Frontend: JS syntax and production static build pass (8 nonempty assets).
+- Current HTTP checks: `/`, `/api/health`, `/api/network`, station history and evidence return **200** on port **8766**. The same station key links 356 preserved Ambhasi rows to raw selected value -14.22, UNCERTAIN, and an actionable NextCheck. All five groups use the official pinned snapshot.
+- Prior supported-browser verification passed Network → Station → Evidence, back links, deep-link refresh, keyboard selection and 390px overflow checks. **Current browser rerun is blocked by the browser tool's URL policy**; no workaround was attempted. Standalone Chrome previously failed to launch its crash subprocess, so the saved Playwright suite is not reported as passed.
+- Python dependency audit: no known vulnerabilities. npm audit: zero vulnerabilities (October 8, dependencies unchanged).
+- SPIKE runs on real historical data. FLATLINE and DROPOUT algorithms and eligibility contracts pass controlled unit tests, but official resolution/active-interval/publication-allowance evidence is absent: real outputs stay UNAVAILABLE. Four-state triage requires affirmative verified corroboration for environmental interpretation; no reference-provider integration is claimed.
+- GitHub remote is correct. Current environment still returns HTTP 401 after the user's external re-authentication; no successful push is claimed. Existing local history is preserved.
+- AWS: root access reported by owner; no root credentials used. Mumbai is intended, not verified. IAM temporary-login setup and scoped read-only policy are in AWS-ACCESS. No provisioning or spending.
+- Restored one same-origin frontend/API server on 8766. `scripts/start-local.ps1` lets the owner keep it running in their terminal across agent sessions.
+
+No accuracy/F1/field-failure result or full P0 readiness is claimed. Remaining blockers: GitHub credential access, fresh browser E2E, verified detector metadata, AWS identity/budget, held-out evaluation.
+
+---
+
+## Earlier first-cycle record (superseded where noted above)
+
 # First execution cycle — October 8, 2026
 
 ## Actual results

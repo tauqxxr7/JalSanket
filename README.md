@@ -1,5 +1,9 @@
 # JalSanket
 
+Current local milestone (October 9): dedicated Network → Station → Evidence routes; SPIKE on official data; FLATLINE/DROPOUT implementations with explicit metadata gates; four-state triage policy and NextCheck. FLATLINE/DROPOUT remain UNAVAILABLE on the current official snapshot. No held-out evaluation or AWS deployment is complete.
+
+Start both frontend and API from a terminal you keep open: `./scripts/start-local.ps1` (http://127.0.0.1:8766/). The static frontend uses the same FastAPI server; no second Node server is required. See [current verification](docs/VERIFICATION.md) and [AWS owner setup and deployment sequence](docs/AWS-ACCESS.md).
+
 **Evidence-first groundwater telemetry triage.** Sensor problem, water problem, or insufficient evidence?
 
 A working local first slice for Environmental Hacks, October 8–11, 2026. It preserves official provider measurements, screens eligible same-station sequences, exposes evidence gaps, abstains from unsupported causes and suggests a next discriminating check.
@@ -55,7 +59,7 @@ Official CGWB/NWDP CSV
 
 Data and evidence are loaded once at API startup; requests serve the pinned in-memory result. Restart after acquisition or backend changes. This is a local prototype with five groups and a fixed window, not a live ingestion service.
 
-Read routes: `/api/health`, `/api/network`, `/api/stations/{station_group_key}/evidence`. Unknown IDs return 404; unsupported query parameters 422; missing/corrupt data 503. Pydantic schemas are exposed at `/docs`. There are no public writes, provider URL inputs, upload endpoints or credentials in the browser. Same-origin frontend/API requires no permissive CORS.
+Read routes: `/api/health`, `/api/network`, `/api/stations/{station_group_key}`, `/api/stations/{station_group_key}/evidence`. Unknown IDs return 404; unsupported query parameters 422; missing/corrupt data 503. Pydantic schemas are exposed at `/docs`. There are no public writes, provider URL inputs, upload endpoints or credentials in the browser. Same-origin frontend/API requires no permissive CORS.
 
 **Actual AWS usage: none yet.** Planned after account/budget approval: bounded ingestion/analysis on Lambda, private S3 snapshots/assets, API Gateway, CloudFront and CloudWatch. No deployable infrastructure or paid resource has been created. College-email console access does not establish permission, credits or a region. See [task board](docs/TASK-BOARD.md).
 

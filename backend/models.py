@@ -109,6 +109,11 @@ class DetectorResult(Contract):
     step_score: float | None = None
     threshold: float | None = None
     config_version: str = "spike-v1-experimental-28-20-6-step"
+    window_start: datetime | None = None
+    window_end: datetime | None = None
+    affected_source_times: list[str] = Field(default_factory=list)
+    evidence_refs: list[str] = Field(default_factory=list)
+    metrics: dict[str, float] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def no_false_normality(self):
@@ -147,4 +152,4 @@ class EvidencePackage(Contract):
     flagged_observations: int
     evaluated_observations: int
     unavailable_observations: int
-    analysis_version: str = "vertical-slice-v0"
+    analysis_version: str = "p0-patterns-v1"

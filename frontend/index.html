@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>JalSanket — Network overview</title>
     <link rel="stylesheet" href="/styles.css" />
+    <script src="/station.js" defer></script>
     <script src="/app.js" defer></script>
   </head>
   <body>
@@ -17,8 +18,8 @@
       <hr />
       <p class="eyebrow">MONITORING</p>
       <nav aria-label="Monitoring">
-        <a class="active" href="#main">Network overview</a
-        ><a href="#queue">Stations</a><a href="#evidence">Evidence preview</a
+        <a id="nav-network" class="active" href="#/network">Network overview</a
+        ><a id="nav-station" href="#/network">Stations</a><a id="nav-evidence" href="#/network">Evidence</a
         ><a href="#quality">Data quality</a>
       </nav>
       <div class="sidebar-foot">
@@ -87,8 +88,8 @@
             <p class="placeholder">Loading verified snapshot…</p>
           </div>
           <p class="panel-footer">
-            Experimental spike screening only. Flatline and dropout are not yet
-            implemented. No live-data or physical-cause claim.
+            Experimental spike screening. Flatline and dropout are withheld where
+            required metadata is unverified. No live-data or physical-cause claim.
           </p>
         </section>
         <aside class="rail">
@@ -151,18 +152,20 @@
           </section>
         </aside>
       </div>
+      <section id="station-view" hidden aria-live="polite"></section>
       <section
         id="evidence"
+        hidden
         class="panel evidence"
         aria-live="polite"
         aria-busy="false"
       >
         <div class="panel-heading">
-          <p class="eyebrow">EVIDENCE PREVIEW · FIRST VERTICAL SLICE</p>
+          <a id="back-station" href="#/network">← STATION DETAIL</a>
+          <p class="eyebrow">EVIDENCE TRAIL</p>
           <h2 id="evidence-title">Select a station to review its evidence</h2>
           <p>
-            The dedicated Station Detail and Evidence Detail screens follow this
-            milestone.
+            What does the evidence support, what remains unknown, and what should be checked next?
           </p>
         </div>
         <div id="evidence-body"></div>

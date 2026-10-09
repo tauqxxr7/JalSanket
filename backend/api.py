@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from .evidence import build_evidence
-from .models import Contract, EvidencePackage, Provenance
+from .models import Contract, EvidencePackage, Provenance, Observation, Station, Quality
 from .provider import CSVProvider, ROOT, SourceUnavailable, START, END
 
 logger = logging.getLogger("jalsanket")
@@ -38,6 +38,15 @@ class NetworkResponse(Contract):
     stations: list[StationSummary]
 
 
+class StationResponse(Contract):
+    station: Station
+    observations: list[Observation]
+    plot_observations: list[Observation]
+    quality: Quality
+    provenance: Provenance
+    flagged_ids: list[str]
+
+
 def create_app(provider=None):
     provider = provider or CSVProvider()
 
@@ -48,6 +57,7 @@ def create_app(provider=None):
         try:
             provenance, stations, records = provider.load()
             app.state.provenance = provenance
+            app.state.records = records
             for key, station in stations.items():
                 app.state.packages[key] = build_evidence(station, records[key], provenance)
         except SourceUnavailable as error:
@@ -98,6 +108,19 @@ def create_app(provider=None):
         if station_group_key not in app.state.packages:
             raise HTTPException(404, "Unknown internal station grouping.")
         return app.state.packages[station_group_key]
+
+    @app.get("/api/stations/{station_group_key}", response_model=StationResponse)
+    def station_history(station_group_key: str, request: Request):
+        ensure_source()
+        if request.query_params:
+            raise HTTPException(422, "This bounded endpoint accepts no query parameters.")
+        if station_group_key not in app.state.packages:
+            raise HTTPException(404, "Unknown internal station grouping.")
+        package = app.state.packages[station_group_key]
+        from .quality import assess
+        from .spike import detect
+        _, clean = assess(app.state.records[station_group_key])
+        return StationResponse(station=package.station, observations=app.state.records[station_group_key], plot_observations=clean, quality=package.quality, provenance=package.provenance, flagged_ids=[row.observation_id for i,row in enumerate(clean) if detect(clean,i).outcome == "FLAG"])
 
     app.mount("/", StaticFiles(directory=ROOT / "frontend", html=True), name="frontend")
     return app

@@ -42,8 +42,7 @@ function renderQueue() {
     const row = element("button", undefined, "queue-row");
     row.type = "button";
     row.dataset.key = station.station_group_key;
-    row.setAttribute("aria-label", `Review evidence for ${station.label}`);
-    row.setAttribute("aria-pressed", "false");
+    row.setAttribute("aria-label", `Open station ${station.label}`);
     const identity = element("span");
     identity.append(
       element("strong", station.label),
@@ -73,7 +72,7 @@ function renderQueue() {
       element("span", "→", "arrow"),
     );
     row.addEventListener("click", () =>
-      selectStation(station.station_group_key),
+      (location.hash = `#/station/${station.station_group_key}`),
     );
     target.append(row);
   }
@@ -81,6 +80,8 @@ function renderQueue() {
 async function selectStation(key) {
   const request = ++selection;
   const body = byId("evidence-body");
+  byId('back-station').href = `#/station/${key}`;
+  byId('evidence-title').textContent = 'Loading evidence…';
   body.replaceChildren(element("p", "Loading evidence…", "placeholder"));
   byId("evidence").setAttribute("aria-busy", "true");
   document
@@ -93,6 +94,7 @@ async function selectStation(key) {
     if (request !== selection) return;
     byId("evidence-title").textContent =
       `${data.station.label} · Evidence Trail`;
+    byId('back-station').href = `#/station/${key}`;
     body.replaceChildren();
     const strip = element("div", undefined, "observation-strip");
     for (const [label, value] of [
@@ -227,7 +229,7 @@ async function selectStation(key) {
     wrap.append(table);
     provenance.append(wrap);
     body.append(provenance);
-    byId("evidence").scrollIntoView({ block: "start" });
+    window.scrollTo(0,0);
   } catch (error) {
     if (request === selection) {
       byId("evidence-title").textContent = "Evidence could not be loaded";
@@ -292,17 +294,48 @@ async function load() {
     byId("error").hidden = false;
   }
 }
+function showView(view) {
+  for (const name of ['network', 'station', 'evidence']) {
+    const link = byId(`nav-${name}`);
+    link.classList.toggle('active', name === view);
+    if (name === view) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
+  }
+  document.querySelector('main > header').hidden = view !== 'network';
+  document.querySelector('.metrics').hidden = view !== 'network';
+  document.querySelector('.overview').hidden = view !== 'network';
+  byId('station-view').hidden = view !== 'station';
+  byId('evidence').hidden = view !== 'evidence';
+  document.title = `JalSanket — ${view === 'network' ? 'Network overview' : view === 'station' ? 'Station Detail' : 'Evidence Detail'}`;
+}
+async function route() {
+  const [,view,key] = location.hash.split('/');
+  if (!['station','evidence'].includes(view) || !key) { ++selection; showView('network'); return; }
+  showView(view);
+  byId('nav-evidence').href = `#/evidence/${key}`;
+  byId('nav-station').href = `#/station/${key}`;
+  if (view === 'evidence') { await selectStation(key); return; }
+  const request=++selection;byId('station-view').replaceChildren(element('p','Loading station…','placeholder'));
+  try {
+    const [data,evidence]=await Promise.all([get(`/api/stations/${encodeURIComponent(key)}`),get(`/api/stations/${encodeURIComponent(key)}/evidence`)]);
+    if(request!==selection)return;
+    renderStation(data,evidence);window.scrollTo(0,0);
+  } catch(error) {if(request===selection)byId('station-view').replaceChildren(element('h1','Station unavailable'),element('p',error.message));}
+}
+window.addEventListener('hashchange',route);
 document
   .querySelector('a[href="#quality"]')
   .addEventListener("click", async (event) => {
     event.preventDefault();
-    if (!byId("quality") && stations.length)
-      await selectStation(stations[0].station_group_key);
-    if (byId("quality")) {
+    if (!byId('station-view').hidden && byId('station-quality')) {
+      byId('station-quality').scrollIntoView({block:'start'});
+    } else if (!byId('evidence').hidden && byId("quality")) {
       byId("quality").open = true;
       byId("quality").scrollIntoView({ block: "start" });
+    } else if (stations.length) {
+      location.hash=`#/station/${stations[0].station_group_key}`;
     }
   });
 byId("station-filter").addEventListener("input", renderQueue);
-byId("retry").addEventListener("click", load);
-load();
+byId("retry").addEventListener("click", () => load().then(route));
+load().then(route);

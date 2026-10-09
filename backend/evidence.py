@@ -1,5 +1,9 @@
 """Deterministic evidence; anomaly scores never become causal confidence."""
-from .models import DetectorResult, EvidencePackage, NextCheck
+from .models import DetectorResult, EvidencePackage, Verification
+from .eligibility import DetectorContext
+from .flatline import detect_flatline
+from .dropout import detect_dropout
+from .triage import triage
 from .provider import END
 from .quality import assess
 from .spike import detect
@@ -7,6 +11,9 @@ from .spike import detect
 
 def build_evidence(station, records, provenance):
     quality, clean = assess(records)
+    context = DetectorContext(cadence_status=Verification.VERIFIED, cadence_seconds=21600, cadence_refs=[provenance.resource_url])
+    flatline = detect_flatline(clean, len(clean)-1, context)
+    dropout = detect_dropout(records, END, context)
     results = [detect(clean, i) for i in range(len(clean))]
     flags = [item for item in results if item.outcome == "FLAG"]
     eligible = [item for item in results if item.eligibility == "ELIGIBLE"]
@@ -23,6 +30,5 @@ def build_evidence(station, records, provenance):
     elif selected.outcome == "NO_FLAG":
         support.append("No configured spike departure at this evaluated observation. This supplies no affirmative environmental evidence.")
     unavailable = ["Independent time-matched manual/reference measurement", "Logger versus portal comparison and maintenance/revision records", "Physical datum/sign interpretation and source timezone", "Verified instrument resolution and provider sentinel-value dictionary"]
-    assessment = "UNCERTAIN" if eligible else "INSUFFICIENT_EVIDENCE"
-    next_check = NextCheck(action="Compare the original logger record and an independent reference measurement for this source time.", rationale="Agreement or disagreement can help distinguish a recording/transmission issue from genuine movement; verify timestamp and measurement reference before comparing.", evidence_gap_addressed="No independent measurement or device diagnostics establishes the cause.") if eligible else NextCheck(action="Recover a continuous comparable local history and resolve the stated eligibility reason.", rationale="A detector result cannot be interpreted before its prerequisites are satisfied.", evidence_gap_addressed=selected.reason)
-    return EvidencePackage(evidence_id=f"{provenance.snapshot_id}:{station.station_group_key}:v0", station=station, observation=observation, relevant_history=history, provenance=provenance, quality=quality, detectors=[selected, DetectorResult(detector="FLATLINE", eligibility="UNAVAILABLE", reason="Not implemented in the first vertical slice."), DetectorResult(detector="DROPOUT", eligibility="UNAVAILABLE", reason="Not implemented in the first vertical slice; completeness is a separate quality measure.")], supporting_evidence=support, contradicting_evidence=[], unavailable_evidence=unavailable, limitations=["This is not a diagnosis of physical sensor failure.", "Pumping, genuine movement, well work and data-acquisition problems remain competing explanations, not observed counterevidence.", "An abrupt departure is a spike candidate; isolation/reversion is not established at issue time.", "Experimental 28-reading lookback, 20-reading minimum and six-MAD cutoff are uncalibrated engineering settings, not universal physical limits.", "Historical replay of previously inspected Q1 2024 data, not live monitoring or an untouched evaluation holdout.", "No known sentinel dictionary: finite numeric source codes cannot be reliably distinguished from readings."], assessment=assessment, assessment_reason="ABSTAIN: the available telemetry cannot distinguish physical movement from a telemetry problem." if eligible else "Required usable local history or detector prerequisites are unavailable.", next_check=next_check, analysis_as_of=END, flagged_observations=len(flags), evaluated_observations=len(eligible), unavailable_observations=len(results) - len(eligible))
+    decision = triage([selected, flatline, dropout])
+    return EvidencePackage(evidence_id=f"{provenance.snapshot_id}:{station.station_group_key}:v0", station=station, observation=observation, relevant_history=history, provenance=provenance, quality=quality, detectors=[selected, flatline, dropout], supporting_evidence=support, contradicting_evidence=[], unavailable_evidence=unavailable, limitations=["This is not a diagnosis of physical sensor failure.", "Pumping, genuine movement, well work and data-acquisition problems remain competing explanations, not observed counterevidence.", "An abrupt departure is a spike candidate; isolation/reversion is not established at issue time.", "Experimental 28-reading lookback, 20-reading minimum and six-MAD cutoff are uncalibrated engineering settings, not universal physical limits.", "Historical replay of previously inspected Q1 2024 data, not live monitoring or an untouched evaluation holdout.", "No known sentinel dictionary: finite numeric source codes cannot be reliably distinguished from readings."], assessment=decision.assessment, assessment_reason=decision.reason, next_check=decision.next_check, analysis_as_of=END, flagged_observations=len(flags), evaluated_observations=len(eligible), unavailable_observations=len(results) - len(eligible))
