@@ -1,0 +1,48 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Transform": "AWS::Serverless-2016-10-31",
+  "Description": "JalSanket existing read-only evidence API; local SAM validation/build only. No deployment authorized.",
+  "Parameters": {
+    "EvidenceBucket": {
+      "Type": "String",
+      "Description": "Existing private evidence bucket, required only for future deployment"
+    }
+  },
+  "Resources": {
+    "EvidenceApi": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "CodeUri": "infrastructure/",
+        "Handler": "handler.handler",
+        "Runtime": "python3.12",
+        "MemorySize": 128,
+        "Timeout": 10,
+        "Environment": {
+          "Variables": {
+            "DATA_BUCKET": {
+              "Ref": "EvidenceBucket"
+            }
+          }
+        },
+        "Policies": [
+          {
+            "S3ReadPolicy": {
+              "BucketName": {
+                "Ref": "EvidenceBucket"
+              }
+            }
+          }
+        ],
+        "Events": {
+          "EvidenceGet": {
+            "Type": "HttpApi",
+            "Properties": {
+              "Path": "/api/{proxy+}",
+              "Method": "GET"
+            }
+          }
+        }
+      }
+    }
+  }
+}

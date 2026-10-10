@@ -1,6 +1,6 @@
 # JalSanket
 
-Current local milestone (October 9): dedicated Network → Station → Evidence routes; SPIKE on official data; FLATLINE/DROPOUT implementations with explicit metadata gates; four-state triage policy and NextCheck. FLATLINE/DROPOUT remain UNAVAILABLE on the current official snapshot. No held-out evaluation or AWS deployment is complete.
+Current local milestone (October 10): dedicated Network → Station → Evidence routes; SPIKE on official data; FLATLINE/DROPOUT implementations with explicit metadata gates; four-state triage policy and NextCheck. FLATLINE/DROPOUT remain UNAVAILABLE on the current official snapshot. Controlled Q2 synthetic-pattern evaluation is recorded; no AWS cloud deployment is claimed.
 
 Start both frontend and API from a terminal you keep open: `./scripts/start-local.ps1` (http://127.0.0.1:8766/). The static frontend uses the same FastAPI server; no second Node server is required. See [current verification](docs/VERIFICATION.md) and [AWS owner setup and deployment sequence](docs/AWS-ACCESS.md).
 
@@ -8,17 +8,17 @@ Start both frontend and API from a terminal you keep open: `./scripts/start-loca
 
 A working local first slice for Environmental Hacks, October 8–11, 2026. It preserves official provider measurements, screens eligible same-station sequences, exposes evidence gaps, abstains from unsupported causes and suggests a next discriminating check.
 
-**This is not a diagnosis of physical sensor failure.** No AWS deployment or accuracy benchmark is claimed.
+**This is not a diagnosis of physical sensor failure.** No AWS deployment or real sensor-failure accuracy is claimed.
 
 ## Current status
 
 | Status | Capability |
 |---|---|
-| IMPLEMENTED | Full official CSV acquisition and SHA-256 custody; five bounded station groupings; Pydantic contracts; quality/eligibility; deterministic evidence and next check; FastAPI; functioning Network Overview with inline evidence preview |
+| IMPLEMENTED | Full official CSV acquisition and SHA-256 custody; five bounded station groupings; Pydantic contracts; quality/eligibility; deterministic evidence and next check; FastAPI; three-screen Network → Station → Evidence workflow |
 | EXPERIMENTAL | One causal abrupt-departure/spike-candidate detector; uncalibrated 28-reading window, 20-reading minimum, six-scaled-MAD departure and step cutoffs |
-| PARTIAL | One screen is functional. Dedicated Station Detail and Evidence Detail, isolation/reversion validation, exhaustive quality policies and full three-screen E2E remain pending |
-| SYNTHETIC | Controlled unit-test examples only; no synthetic values are displayed as official telemetry |
-| ROADMAP | Complete P0 flatline/dropout, three-screen journey, authorized AWS deployment, reproducible held-out synthetic-pattern evaluation and submission demo |
+| PARTIAL | Cloud deployment and real sensor-failure validation remain unavailable |
+| SYNTHETIC | Reproducible controlled anomaly injections on Q2 official historical sequences; separate labelled demonstration app |
+| ROADMAP | Submission demo and, only with separate authorization, cloud deployment |
 
 No forecasting, chatbot, map, Bedrock or extra detectors. Flatline/dropout explicitly report UNAVAILABLE / NOT_RUN. All five current assessments are UNCERTAIN; absence of a flag is not environmental evidence.
 
@@ -81,7 +81,7 @@ Evidence selects the latest flag, otherwise latest eligible observation, otherwi
 
 ## Evaluation, security and delivery
 
-No held-out evaluation is complete; no accuracy, latency benchmark or real-failure claims are made. Future controlled injections need chronological splits, separate tuning and untouched tests, manifests, seeds, exclusions and actual metrics.
+[Recorded evaluation](evaluation/results.json) contains 25 Q2 windows and 150 paired cases, separate from Q1 development. Seed, source hash, raw row references, every modification and exclusions are recorded. Reproduce with `.\.venv\Scripts\python.exe -m scripts.evaluate`. The October 10 rerun exactly matched cases and metrics. SPIKE / FLATLINE / DROPOUT F1: 0.649 / 0.611 / 1.000; recall: 0.48 / 0.44 / 1.00. Unmodified controls are not independently certified fault-free; their executed-case alarm rates are 0%, with execution coverage 88% / 76% / 100%. Synthetic resolution and operating metadata are benchmark assumptions, not official facts. Latency is conditional source-clock latency, not live system performance.
 
 > This evaluates detection of controlled synthetic anomaly patterns. It does not establish accuracy for diagnosing real physical sensor failures.
 
@@ -99,3 +99,17 @@ The second server uses three unchanged official rows, explicitly labels the
 history cut as a TEST SUBSET, and verifies insufficient evidence. It is never
 imported by the normal application. `JALSANKET_BASE_URL` overrides the normal
 8766 URL when testing another local port. Stop the test-only server afterward.
+
+## AWS open-source integration — local only
+
+[AWS SAM CLI](https://github.com/aws/aws-sam-cli) validates `template.yaml` and builds the existing `infrastructure/handler.py` into `.aws-sam/build/EvidenceApi/`. The verification script exercises that exact built artifact on exported, validated official evidence. S3 reads are explicitly replaced by a local test double for this check. This proves packaging and handler contracts, not AWS S3 access, Lambda runtime execution or cloud deployment. No Docker runtime is available here; `sam local invoke` is not claimed. Organizer acceptance of this open-source use is not independently confirmed.
+
+```powershell
+python -m venv .sam-venv
+.\.sam-venv\Scripts\python.exe -m pip install -r requirements-sam.txt
+.\scripts\verify-sam.ps1
+# Keep this separate terminal open for the working product:
+.\scripts\start-local.ps1 -Port 8768
+```
+
+Open http://127.0.0.1:8768/ and select a station, View Evidence, then read Next Discriminating Check. The API and UI share this origin; no CORS exception is needed. SAM verification makes no cloud resource calls; do not run deploy commands without separate approval. Generated packages, environments and exported data stay ignored. The committed evaluation JSON is a reproducible scientific result, not a deployment bundle.

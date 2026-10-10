@@ -11,3 +11,6 @@ dist/
 dist-cloud/
 artifacts/
 node_modules/
+
+.sam-venv/
+.aws-sam/

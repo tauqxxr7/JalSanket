@@ -4,3 +4,5 @@
 - UI: user's [JalSanket — Evidence Trail](https://www.figma.com/design/WkyawTvNQYtHiuOuypXoSp/JalSanket-%E2%80%94-Evidence-Trail), Network Overview 7:44. Four original 10px SVG legend assets: telemetry 7:184, environmental 7:187, uncertain 7:190, insufficient 7:193. Conditional map assets are deliberately omitted under the no-map requirement. System font fallback; no proprietary font file copied.
 - Runtime direct dependencies: FastAPI (MIT), Pydantic (MIT), Uvicorn (BSD-3-Clause). Test/tool direct dependencies: HTTPX (BSD-3-Clause), pytest (MIT), pip-audit (Apache-2.0), Playwright (Apache-2.0). Exact installed versions are recorded in Python/npm lockfiles. Upstream packages retain their own notices/licenses; project MIT does not relicense them.
 - OpenAI Codex and Figma MCP assistance: see AI_USAGE.md. No competitor implementation was copied.
+
+- AWS SAM CLI: AWS open-source serverless validation/build tooling, Apache-2.0; https://github.com/aws/aws-sam-cli. Used locally to build the existing Lambda handler, with no cloud deployment claimed. Version pinned in requirements-sam.txt.
