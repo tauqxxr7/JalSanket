@@ -30,7 +30,7 @@ class Provenance(Contract):
     terms_url: str
     transformations: list[str]
     exclusions: list[str]
-    data_mode: Literal["OFFICIAL_HISTORICAL", "OFFICIAL_HISTORICAL_TEST_SUBSET"] = "OFFICIAL_HISTORICAL"
+    data_mode: Literal["OFFICIAL_HISTORICAL", "OFFICIAL_HISTORICAL_TEST_SUBSET", "SYNTHETIC_DEMONSTRATION"] = "OFFICIAL_HISTORICAL"
 
     @model_validator(mode="after")
     def known_retrieval_instant(self):
@@ -75,6 +75,8 @@ class Station(Contract):
 
 
 class Quality(Contract):
+    window_start: datetime
+    window_end_exclusive: datetime
     state: Literal["LIMITED", "POOR", "INSUFFICIENT"]
     intended_use: str = "Provider-native same-station spike screening"
     raw_rows: int

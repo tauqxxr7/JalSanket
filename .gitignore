@@ -8,5 +8,6 @@ data/derived/
 !.env.example
 .cache/
 dist/
+dist-cloud/
 artifacts/
 node_modules/

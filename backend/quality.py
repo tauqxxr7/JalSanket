@@ -8,7 +8,7 @@ from .provider import START, END
 CADENCE = 21600
 
 
-def assess(records: list[Observation]):
+def assess(records: list[Observation], window_start=START, window_end=END):
     by_time = defaultdict(list)
     times = [row.source_time for row in records if row.source_time is not None]
     for row in records:
@@ -22,11 +22,11 @@ def assess(records: list[Observation]):
             clean.append(group[0])
     # Expected grid phase comes from modal observed source-clock remainder,
     # not an assumed UTC/IST offset. Off-grid records remain visible.
-    remainders = Counter(int((stamp - START).total_seconds()) % CADENCE for stamp in times)
+    remainders = Counter(int((stamp - window_start).total_seconds()) % CADENCE for stamp in times)
     phase = remainders.most_common(1)[0][0] if remainders else 0
     grid = set()
-    slot = START + timedelta(seconds=phase)
-    while slot < END:
+    slot = window_start + timedelta(seconds=phase)
+    while slot < window_end:
         grid.add(slot)
         slot += timedelta(seconds=CADENCE)
     occupied = {row.source_time for row in clean} & grid
@@ -42,4 +42,4 @@ def assess(records: list[Observation]):
     if off_grid:
         reasons.append("Off-grid acquisitions are counted separately from expected slots.")
     state = "INSUFFICIENT" if len(clean) < 21 else "POOR" if conflicts else "LIMITED"
-    return Quality(state=state, raw_rows=len(records), valid_unique_observations=len(clean), numeric_invalid=sum(row.raw_numeric_value is None for row in records), timestamp_invalid=sum(row.source_time is None for row in records), duplicate_timestamps=duplicate_count, conflicting_timestamps=conflicts, out_of_order=sum(b < a for a, b in zip(times, times[1:])), expected_slots=len(grid), occupied_slots=len(occupied), completeness=len(occupied) / len(grid), off_grid_count=off_grid, longest_gap_seconds=longest_run * CADENCE, available_history_seconds=sum(intervals), reasons=reasons), clean
+    return Quality(window_start=window_start, window_end_exclusive=window_end, state=state, raw_rows=len(records), valid_unique_observations=len(clean), numeric_invalid=sum(row.raw_numeric_value is None for row in records), timestamp_invalid=sum(row.source_time is None for row in records), duplicate_timestamps=duplicate_count, conflicting_timestamps=conflicts, out_of_order=sum(b < a for a, b in zip(times, times[1:])), expected_slots=len(grid), occupied_slots=len(occupied), completeness=len(occupied) / len(grid), off_grid_count=off_grid, longest_gap_seconds=longest_run * CADENCE, available_history_seconds=sum(intervals), reasons=reasons), clean

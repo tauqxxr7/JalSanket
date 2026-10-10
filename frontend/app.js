@@ -94,7 +94,7 @@ async function selectStation(key) {
     const strip = element("div", undefined, "observation-strip");
     for (const [label, value] of [
       [
-        "PROVIDER-NATIVE VALUE · DECLARED m",
+        data.provenance.data_mode === 'SYNTHETIC_DEMONSTRATION' ? 'SYNTHETIC VALUE · DECLARED m' : "PROVIDER-NATIVE VALUE · DECLARED m",
         data.observation?.measurement_raw ?? "Unavailable",
       ],
       [
@@ -179,6 +179,8 @@ async function selectStation(key) {
     link.target = "_blank";
     link.rel = "noopener noreferrer";
     provenance.append(link);
+    for (const transformation of data.provenance.transformations)
+      provenance.append(element('p', transformation));
     provenance.append(
       element(
         "p",
@@ -240,6 +242,8 @@ async function load() {
   try {
     const data = await get("/api/network");
     stations = data.stations;
+    byId('review-window').textContent = `${data.window_start.slice(0,10)} → ${data.window_end_exclusive.slice(0,10)} (end exclusive)`;
+    byId('data-mode').textContent = data.provenance.data_mode.replaceAll('_',' ');
     byId("source").replaceChildren(
       element("strong", "SOURCE · CGWB / NWDP"),
       element(
@@ -278,6 +282,8 @@ async function load() {
     );
     byId("districts").textContent = "Source districts unavailable.";
     byId("source").textContent = "SOURCE · UNAVAILABLE";
+    byId('data-mode').textContent = 'SOURCE UNAVAILABLE';
+    byId('review-window').textContent = 'Window unavailable';
     for (const id of [
       "flag-count",
       "station-count",

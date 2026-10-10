@@ -1,0 +1,17 @@
+{
+  "version": "controlled-patterns-v1",
+  "seed": 20261009,
+  "development_window": ["2024-01-01", "2024-04-01"],
+  "evaluation_window": ["2024-04-01", "2024-07-01"],
+  "window_samples": 40,
+  "injection_index": 28,
+  "spike_scale_multipliers": [4, 8, 12],
+  "flatline_lengths": [4, 8, 12],
+  "dropout_lengths": [1, 2, 4],
+  "synthetic_resolution": 0.01,
+  "synthetic_publication_allowance_seconds": 3600,
+  "metadata_scope": "Controlled benchmark assumptions only, never official instrument or operating metadata",
+  "negative_label": "Unmodified historical control; no injected anomaly, not independently certified fault-free",
+  "metric_unit": "One detector decision per paired historical window; abstained positives count as missed injections; abstained negatives excluded from FPR denominator and reported separately",
+  "latency_unit": "Source-clock hours from injected pattern onset, conditional on detection; not wall-clock API or live delivery latency"
+}

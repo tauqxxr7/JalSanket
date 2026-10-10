@@ -47,7 +47,7 @@ class StationResponse(Contract):
     flagged_ids: list[str]
 
 
-def create_app(provider=None):
+def create_app(provider=None, detector_contexts=None):
     provider = provider or CSVProvider()
 
     @asynccontextmanager
@@ -59,7 +59,7 @@ def create_app(provider=None):
             app.state.provenance = provenance
             app.state.records = records
             for key, station in stations.items():
-                app.state.packages[key] = build_evidence(station, records[key], provenance)
+                app.state.packages[key] = build_evidence(station, records[key], provenance, (detector_contexts or {}).get(key))
         except SourceUnavailable as error:
             app.state.source_error = str(error)
             logger.warning(json.dumps({"processing_stage": "snapshot_load", "status": "UNAVAILABLE", "error": "Snapshot unavailable or invalid"}))
@@ -98,7 +98,7 @@ def create_app(provider=None):
         if request.query_params:
             raise HTTPException(422, "This bounded endpoint accepts no query parameters.")
         packages = sorted(app.state.packages.values(), key=lambda p: (-p.flagged_observations, p.station.label))
-        return NetworkResponse(provenance=app.state.provenance, window_start=START.isoformat(), window_end_exclusive=END.isoformat(), clock_basis="SOURCE_CLOCK_TIMEZONE_UNVERIFIED", stations=[StationSummary(station_group_key=p.station.station_group_key, label=p.station.label, district=p.station.district, assessment=p.assessment, quality=p.quality.state, completeness=p.quality.completeness, flags=p.flagged_observations, evaluated=p.evaluated_observations, next_action=p.next_check.action) for p in packages])
+        return NetworkResponse(provenance=app.state.provenance, window_start=packages[0].quality.window_start.isoformat(), window_end_exclusive=packages[0].quality.window_end_exclusive.isoformat(), clock_basis="SOURCE_CLOCK_TIMEZONE_UNVERIFIED", stations=[StationSummary(station_group_key=p.station.station_group_key, label=p.station.label, district=p.station.district, assessment=p.assessment, quality=p.quality.state, completeness=p.quality.completeness, flags=p.flagged_observations, evaluated=p.evaluated_observations, next_action=p.next_check.action) for p in packages])
 
     @app.get("/api/stations/{station_group_key}/evidence", response_model=EvidencePackage)
     def evidence(station_group_key: str, request: Request):
@@ -119,7 +119,7 @@ def create_app(provider=None):
         package = app.state.packages[station_group_key]
         from .quality import assess
         from .spike import detect
-        _, clean = assess(app.state.records[station_group_key])
+        _, clean = assess(app.state.records[station_group_key], package.quality.window_start, package.quality.window_end_exclusive)
         return StationResponse(station=package.station, observations=app.state.records[station_group_key], plot_observations=clean, quality=package.quality, provenance=package.provenance, flagged_ids=[row.observation_id for i,row in enumerate(clean) if detect(clean,i).outcome == "FLAG"])
 
     app.mount("/", StaticFiles(directory=ROOT / "frontend", html=True), name="frontend")
