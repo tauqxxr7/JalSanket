@@ -109,6 +109,20 @@ def create_app(provider=None, detector_contexts=None):
             raise HTTPException(404, "Unknown internal station grouping.")
         return app.state.packages[station_group_key]
 
+    @app.get("/api/stations/{station_group_key}/observations/{observation_id}/evidence", response_model=EvidencePackage)
+    def observation_evidence(station_group_key: str, observation_id: str, request: Request):
+        ensure_source()
+        if request.query_params:
+            raise HTTPException(422, "This endpoint accepts no query parameters.")
+        if station_group_key not in app.state.packages:
+            raise HTTPException(404, "Unknown internal station grouping.")
+        package = app.state.packages[station_group_key]
+        try:
+            return build_evidence(package.station, app.state.records[station_group_key], package.provenance,
+                                  (detector_contexts or {}).get(station_group_key), observation_id)
+        except LookupError:
+            raise HTTPException(404, "Observation unavailable for validated inspection.")
+
     @app.get("/api/stations/{station_group_key}", response_model=StationResponse)
     def station_history(station_group_key: str, request: Request):
         ensure_source()

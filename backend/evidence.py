@@ -9,7 +9,7 @@ from .quality import assess
 from .spike import detect
 
 
-def build_evidence(station, records, provenance, detector_context: DetectorContext | None = None):
+def build_evidence(station, records, provenance, detector_context: DetectorContext | None = None, observation_id: str | None = None):
     context = detector_context or DetectorContext(cadence_status=Verification.VERIFIED, cadence_seconds=21600, cadence_refs=[provenance.resource_url])
     window_start = context.active_start if context.active_interval_status == Verification.VERIFIED else None
     window_end = context.active_end_exclusive if window_start else END
@@ -25,6 +25,13 @@ def build_evidence(station, records, provenance, detector_context: DetectorConte
     # Most recent flag, otherwise most recent eligible observation; deterministic,
     # auditable selection. Network review is a historical-window summary.
     selected = flags[-1] if flags else eligible[-1] if eligible else results[-1] if results else DetectorResult(detector="SPIKE", eligibility="INSUFFICIENT_HISTORY", reason="No valid observations.")
+    if observation_id is not None:
+        index = next((i for i, row in enumerate(clean) if row.observation_id == observation_id), None)
+        if index is None:
+            raise LookupError("Observation is not available for validated inspection")
+        selected = results[index]
+        flatline = flatline_results[index]
+        dropout = detect_dropout(records, clean[index].source_time, context)
     lookup = {row.observation_id: row for row in clean}
     observation = lookup.get(selected.candidate_id)
     lookup = {row.observation_id: row for row in records}
@@ -44,4 +51,4 @@ def build_evidence(station, records, provenance, detector_context: DetectorConte
         unavailable.append('Verified instrument resolution')
     unavailable.extend(f'{r.detector}: {r.reason}' for r in (flatline, dropout) if r.execution_status == 'NOT_RUN')
     decision = triage([selected, flatline, dropout])
-    return EvidencePackage(evidence_id=f"{provenance.snapshot_id}:{station.station_group_key}:v0", station=station, observation=observation, relevant_history=history, provenance=provenance, quality=quality, detectors=[selected, flatline, dropout], supporting_evidence=support, contradicting_evidence=[], unavailable_evidence=unavailable, limitations=["This is not a diagnosis of physical sensor failure.", "Pumping, genuine movement, well work and data-acquisition problems remain competing explanations, not observed counterevidence.", "An abrupt departure is a spike candidate; isolation/reversion is not established at issue time.", "Experimental 28-reading lookback, 20-reading minimum and six-MAD cutoff are uncalibrated engineering settings, not universal physical limits.", "Controlled synthetic demonstration, not an actual CGWB incident." if provenance.data_mode == "SYNTHETIC_DEMONSTRATION" else "Historical replay of previously inspected Q1 2024 data, not live monitoring or an untouched evaluation holdout.", "No known sentinel dictionary: finite numeric source codes cannot be reliably distinguished from readings."], assessment=decision.assessment, assessment_reason=decision.reason, next_check=decision.next_check, analysis_as_of=window_end, flagged_observations=len(flags), evaluated_observations=len(eligible), unavailable_observations=len(results) - len(eligible))
+    return EvidencePackage(evidence_id=f"{provenance.snapshot_id}:{station.station_group_key}" + (f":{observation_id}" if observation_id else "") + ":v0", station=station, observation=observation, relevant_history=history, provenance=provenance, quality=quality, detectors=[selected, flatline, dropout], supporting_evidence=support, contradicting_evidence=[], unavailable_evidence=unavailable, limitations=["This is not a diagnosis of physical sensor failure.", "Pumping, genuine movement, well work and data-acquisition problems remain competing explanations, not observed counterevidence.", "An abrupt departure is a spike candidate; isolation/reversion is not established at issue time.", "Experimental 28-reading lookback, 20-reading minimum and six-MAD cutoff are uncalibrated engineering settings, not universal physical limits.", "Controlled synthetic demonstration, not an actual CGWB incident." if provenance.data_mode == "SYNTHETIC_DEMONSTRATION" else "Historical replay of previously inspected Q1 2024 data, not live monitoring or an untouched evaluation holdout.", "No known sentinel dictionary: finite numeric source codes cannot be reliably distinguished from readings."], assessment=decision.assessment, assessment_reason=decision.reason, next_check=decision.next_check, analysis_as_of=window_end, flagged_observations=len(flags), evaluated_observations=len(eligible), unavailable_observations=len(results) - len(eligible))
