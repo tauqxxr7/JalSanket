@@ -68,3 +68,7 @@ Screenshots and machine-readable local diagnostics reside in ignored `artifacts/
 AWS CLI and default profile absent; no AWS identity/region, core service authorization, quotas, billing visibility or budget verified. No resource was provisioned. GitHub authentication works and the repository was newly created during the event. User-supplied live/start email clears build authorization; participant eligibility/check-in/Builder Center confirmation remains pending separately. Submission deadline is reported as October 11, 8 PM IST by the newer organizer article; final form/receipt remains a future check.
 
 Next engineering action: run the saved standalone browser suite in a permitted environment, then complete isolated-spike/reversion semantics and remaining P0 according to the frozen dependency order. Begin AWS read-only account checks once the approved authentication route is available. No held-out performance claims or AWS deployment claims until measured.
+
+## October 10 local integration verification
+
+AWS SAM CLI 1.168.0: template lint validation and Python 3.12 build passed. `scripts/verify-sam.ps1` is the local demonstration command. The SAM-built handler is checked against exported evidence using an explicit local S3 test double; this is not cloud deployment or Lambda runtime emulation. Backend: 52 tests passed; frontend build passed. Controlled evaluation rerun matched all 150 cases and metrics. Browser Network → Station → Evidence → NextCheck passed on port 8768.
