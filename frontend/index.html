@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>JalSanket — Network overview</title>
     <link rel="stylesheet" href="/styles.css" />
+    <script src="/explorer.js" defer></script>
     <script src="/station.js" defer></script>
     <script src="/app.js" defer></script>
   </head>
@@ -80,9 +81,17 @@
             ><input
               id="station-filter"
               type="search"
-              placeholder="Station or district"
+              placeholder="Station, internal identifier or district"
               autocomplete="off"
             />
+            <div class="filter-bar">
+              <label>Evidence state<select id="state-filter" aria-label="Evidence state"><option value="">All states</option><option>TELEMETRY_EVIDENCE</option><option>ENVIRONMENTAL_CHANGE_POSSIBLE</option><option>UNCERTAIN</option><option>INSUFFICIENT_EVIDENCE</option></select></label>
+              <label>Flagged pattern<select id="anomaly-filter" aria-label="Flagged pattern"><option value="">All patterns</option><option>SPIKE</option><option>FLATLINE</option><option>DROPOUT</option></select></label>
+              <button id="reset-filters" type="button">Clear filters</button>
+            </div>
+            <p id="filtered-count" role="status"></p>
+            <button id="guided-demo" type="button" class="primary-action">Explore an Evidence Trail</button>
+            <p class="chart-caption">90-second review: select → inspect → uncertainty → next check → provenance/export. Official data may contain no flagged pattern.</p>
           </div>
           <div id="queue-list" aria-live="polite">
             <p class="placeholder">Loading verified snapshot…</p>

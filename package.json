@@ -5,8 +5,10 @@
   "description": "Browser verification for the static JalSanket frontend",
   "scripts": {
     "test:e2e": "node scripts/check-browser.cjs",
-    "check": "node --check frontend/app.js && node --check frontend/station.js",
-    "build": "node scripts/build.cjs"
+    "check": "node --check frontend/app.js && node --check frontend/station.js && node --check frontend/explorer.js",
+    "build": "node scripts/build.cjs",
+    "test:ui": "node --test tests/explorer.test.cjs",
+    "test:investigation": "node scripts/check-investigation.cjs"
   },
   "devDependencies": {
     "playwright": "1.63.0"

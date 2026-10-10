@@ -113,3 +113,11 @@ python -m venv .sam-venv
 ```
 
 Open http://127.0.0.1:8768/ and select a station, View Evidence, then read Next Discriminating Check. The API and UI share this origin; no CORS exception is needed. SAM verification makes no cloud resource calls; do not run deploy commands without separate approval. Generated packages, environments and exported data stay ignored. The committed evaluation JSON is a reproducible scientific result, not a deployment bundle.
+
+## Interactive investigation (October 10)
+
+Station Explorer supports name/internal-identifier search, combined evidence-state and actual flagged-pattern filters, result count, reset and shareable URL parameters. Missing pattern evidence is disclosed. The timeline supports mouse/keyboard selection and an accessible observation selector; gaps stay open. A new additive observation-evidence route returns the exact selected record, preserving existing aggregate endpoints and conservative triage. Window-wide summaries are explicitly separate from selected-observation evidence.
+
+The Evidence-to-Action panel connects observed values, support, quality, interpretation and NextCheck. Provenance distinguishes source time, retrieval time, unavailable export time, provider-declared units and unverified datum. JSON download serializes the displayed evidence package exactly. The guided entry uses real official data; flagged FLATLINE demonstration is a separate, clearly synthetic app. No scientific thresholds or Figma visual direction changed.
+
+See the [90-second judge walkthrough](docs/JUDGE-WALKTHROUGH.md) for startup, demo steps, limitations and verification. Checks: `python -m pytest -q` inside the project virtual environment; `npm run test:ui`; `npm run check`; `npm run build`. Standalone browser runner: `npm run test:investigation` (Chrome required; process launch is blocked in this Codex sandbox). The in-app browser journey was separately exercised successfully. Cloud deployment remains absent; the draft Lambda adapter supports aggregate endpoints only, not the new per-observation route.

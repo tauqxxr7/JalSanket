@@ -6,6 +6,7 @@ const element = (tag, text, className) => {
   if (className) node.className = className;
   return node;
 };
+let evidenceCache = {};
 let stations = [],
   selection = 0;
 async function get(path) {
@@ -31,9 +32,14 @@ function renderQueue() {
   const target = byId("queue-list");
   target.replaceChildren();
   const search = byId("station-filter").value.toLocaleLowerCase();
-  const shown = stations.filter((s) =>
-    `${s.label} ${s.district}`.toLocaleLowerCase().includes(search),
-  );
+  const shown = filterStations(stations,search,byId('state-filter').value,byId('anomaly-filter').value,evidenceCache);
+  const missing=stations.filter(s=>!evidenceCache[s.station_group_key]).length;
+  byId('filtered-count').textContent = `${shown.length} of ${stations.length} stations shown${missing ? ` · Pattern evidence unavailable for ${missing}; pattern filters exclude those stations.` : ''}`;
+  const params=new URLSearchParams(location.search);
+  for(const [key,value] of [['q',search],['state',byId('state-filter').value],['pattern',byId('anomaly-filter').value]]) {
+    if(value)params.set(key,value);else params.delete(key);
+  }
+  history.replaceState(null,'',`${location.pathname}${params.size?'?'+params:''}${location.hash}`);
   if (!shown.length)
     target.append(
       element("p", "No stations match this filter.", "placeholder"),
@@ -77,7 +83,7 @@ function renderQueue() {
     target.append(row);
   }
 }
-async function selectStation(key) {
+async function selectStation(key, observationId) {
   const request = ++selection;
   const body = byId("evidence-body");
   byId('back-station').href = `#/station/${key}`;
@@ -85,23 +91,29 @@ async function selectStation(key) {
   body.replaceChildren(element("p", "Loading evidence…", "placeholder"));
   byId("evidence").setAttribute("aria-busy", "true");
   try {
-    const data = await get(`/api/stations/${encodeURIComponent(key)}/evidence`);
+    const data = await get(observationId ? `/api/stations/${encodeURIComponent(key)}/observations/${encodeURIComponent(observationId)}/evidence` : `/api/stations/${encodeURIComponent(key)}/evidence`);
     if (request !== selection) return;
     byId("evidence-title").textContent =
       `${data.station.label} · Evidence Trail`;
     byId('back-station').href = `#/station/${key}`;
     body.replaceChildren();
+    body.append(element('p','4–6 · Interpret the evidence, read the next check, then inspect provenance or export.','journey-step'));
+    const download=element('button','Download evidence JSON','export-button'); download.type='button';
+    download.addEventListener('click',()=>{
+      const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)+'\n'],{type:'application/json'}));
+      const a=element('a');a.href=url;a.download=`jalsanket-${key}-evidence.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    });body.append(download);
     const strip = element("div", undefined, "observation-strip");
     for (const [label, value] of [
       [
-        data.provenance.data_mode === 'SYNTHETIC_DEMONSTRATION' ? 'SYNTHETIC VALUE · DECLARED m' : "PROVIDER-NATIVE VALUE · DECLARED m",
+        `${data.provenance.data_mode === "SYNTHETIC_DEMONSTRATION" ? "SYNTHETIC VALUE" : "PROVIDER-NATIVE VALUE"} · ${unitLabel(data.observation)}`,
         data.observation?.measurement_raw ?? "Unavailable",
       ],
       [
         "SOURCE ACQUISITION TIME · ZONE UNVERIFIED",
         data.observation?.raw_timestamp ?? "Unavailable",
       ],
-      ["SPIKE DETECTOR", data.detectors[0].eligibility],
+      ["OBSERVED SIGNAL", data.detectors.filter(d=>d.outcome==='FLAG').map(d=>d.detector).join(', ') || "No flagged pattern at this selection"],
     ]) {
       const item = element("div");
       item.append(element("span", label), element("strong", value));
@@ -178,7 +190,11 @@ async function selectStation(key) {
     link.href = data.provenance.resource_url;
     link.target = "_blank";
     link.rel = "noopener noreferrer";
-    provenance.append(link);
+    provenance.append(link,
+      element('p',`Observation time: ${data.observation?.raw_timestamp || 'Unavailable'} (source clock; timezone unverified).`),
+      element('p','Export/snapshot generation time: unavailable. Retrieval time below is distinct from observation time.'),
+      element('p',unitLabel(data.observation)),
+      element('p',`${data.provenance.data_mode}: historical data, never live telemetry. Official station identifier unavailable.`));
     for (const transformation of data.provenance.transformations)
       provenance.append(element('p', transformation));
     provenance.append(
@@ -203,7 +219,7 @@ async function selectStation(key) {
     for (const name of [
       "Source CSV row",
       "Original timestamp",
-      "Original value",
+      data.provenance.data_mode === "SYNTHETIC_DEMONSTRATION" ? "Demonstration value" : "Original value",
     ])
       tr.append(element("th", name));
     head.append(tr);
@@ -242,6 +258,8 @@ async function load() {
   try {
     const data = await get("/api/network");
     stations = data.stations;
+    evidenceCache={};
+    await Promise.all(stations.map(async s=>{try{evidenceCache[s.station_group_key]=await get(`/api/stations/${s.station_group_key}/evidence`);}catch{evidenceCache[s.station_group_key]=null;}}));
     byId('review-window').textContent = `${data.window_start.slice(0,10)} → ${data.window_end_exclusive.slice(0,10)} (end exclusive)`;
     byId('data-mode').textContent = data.provenance.data_mode.replaceAll('_',' ');
     byId("source").replaceChildren(
@@ -310,12 +328,14 @@ function showView(view) {
   document.title = `JalSanket — ${view === 'network' ? 'Network overview' : view === 'station' ? 'Station Detail' : 'Evidence Detail'}`;
 }
 async function route() {
-  const [,view,key] = location.hash.split('/');
+  const [routePath,query=''] = location.hash.split('?');
+  const [,view,key] = routePath.split('/');
+  const observationId=new URLSearchParams(query).get('observation');
   if (!['station','evidence'].includes(view) || !key) { ++selection; showView('network'); return; }
   showView(view);
   byId('nav-evidence').href = `#/evidence/${key}`;
   byId('nav-station').href = `#/station/${key}`;
-  if (view === 'evidence') { await selectStation(key); return; }
+  if (view === 'evidence') { await selectStation(key,observationId); return; }
   const request=++selection;byId('station-view').replaceChildren(element('p','Loading station…','placeholder'));
   try {
     const [data,evidence]=await Promise.all([get(`/api/stations/${encodeURIComponent(key)}`),get(`/api/stations/${encodeURIComponent(key)}/evidence`)]);
@@ -337,6 +357,13 @@ document
       location.hash=`#/station/${stations[0].station_group_key}`;
     }
   });
+const filters=new URLSearchParams(location.search);
+byId('station-filter').value=filters.get('q') || '';
+byId('state-filter').value=filters.get('state') || '';
+byId('anomaly-filter').value=filters.get('pattern') || '';
 byId("station-filter").addEventListener("input", renderQueue);
+for(const id of ['state-filter','anomaly-filter'])byId(id).addEventListener('change',renderQueue);
+byId('reset-filters').addEventListener('click',()=>{for(const id of ['station-filter','state-filter','anomaly-filter'])byId(id).value='';renderQueue();byId('station-filter').focus();});
+byId('guided-demo').addEventListener('click',()=>{if(stations.length)location.hash=`#/station/${stations.find(s=>evidenceCache[s.station_group_key]?.detectors.some(d=>d.outcome==='FLAG'))?.station_group_key || stations[0].station_group_key}`;});
 byId("retry").addEventListener("click", () => load().then(route));
 load().then(route);

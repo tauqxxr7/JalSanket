@@ -572,3 +572,18 @@ footer {
     display: none;
   }
 }
+
+.filter-bar { display:flex; flex-wrap:wrap; gap:12px; align-items:end; margin-top:14px; }
+.filter-bar label { flex:1; min-width:160px; }
+select { display:block; width:100%; max-width:100%; padding:10px; border:1px solid #8d8d8d; background:#fff; color:#161616; font:inherit; }
+.filter-bar button,.event-button,.export-button { padding:10px 14px; border:1px solid #0f62fe; background:#fff; color:#0043ce; cursor:pointer; }
+.event-button { margin:12px 8px 0 0; }
+button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible { outline:3px solid #0f62fe; outline-offset:3px; }
+.history-chart circle { cursor:pointer; }
+.history-chart circle:focus,.chart-selected { stroke:#161616;stroke-width:3;r:5; }
+.journey-step { background:#edf5ff;padding:12px 16px; }
+#selection-panel { border-left:4px solid #0f62fe;overflow-wrap:anywhere; }
+#evidence-body > .export-button { margin:0 20px 20px; }
+@media(max-width:720px){.filter-bar{display:block}.filter-bar label,.filter-bar button{margin-top:12px}select{font-size:16px}.observation-strip{grid-template-columns:1fr}.history-chart{min-height:200px}}
+
+.chart-line { pointer-events:none; }
