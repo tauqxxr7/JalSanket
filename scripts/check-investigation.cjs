@@ -13,7 +13,7 @@ const assert=require('node:assert/strict');const fs=require('node:fs/promises');
   await page.reload();assert.equal(await page.locator('#anomaly-filter').inputValue(),'SPIKE');
   await page.getByRole('button',{name:'Clear filters',exact:true}).click();
   assert.equal(await page.locator('.queue-row').count(),5);
-  await page.getByRole('button',{name:'Explore an Evidence Trail',exact:true}).click();
+  await page.getByRole('button',{name:'Open station Ambhasi',exact:true}).click();
   await page.locator('#observation-picker').waitFor();
   const point=page.locator('.history-chart circle').nth(0);const id=await point.getAttribute('data-observation');
   await point.press('Enter');await page.getByRole('link',{name:'INSPECT SELECTED EVIDENCE →',exact:true}).waitFor();

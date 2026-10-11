@@ -6,7 +6,7 @@ const element = (tag, text, className) => {
   if (className) node.className = className;
   return node;
 };
-let evidenceCache = {};
+let evidenceCache = {}, dataMode = "";
 let stations = [],
   selection = 0;
 async function get(path) {
@@ -97,16 +97,32 @@ async function selectStation(key, observationId) {
       `${data.station.label} · Evidence Trail`;
     byId('back-station').href = `#/station/${key}`;
     body.replaceChildren();
-    body.append(element('p','4–6 · Interpret the evidence, read the next check, then inspect provenance or export.','journey-step'));
+    const summary=element('section',undefined,'investigation-summary');
+    summary.append(element('strong',data.provenance.data_mode==='SYNTHETIC_DEMONSTRATION'?'SYNTHETIC DEMONSTRATION':'HISTORICAL INVESTIGATION'),element('p',`${data.station.label} · ${data.observation?.raw_timestamp || 'Observation unavailable'} · ${data.assessment.replaceAll('_',' ')}`));
+    const jump=element('a','Review recommended verification ↓','primary-action');jump.href='#recommended-verification';jump.addEventListener('click',event=>{event.preventDefault();byId('recommended-verification').scrollIntoView({behavior:'auto',block:'start'});byId('recommended-verification').focus();});summary.append(jump);body.append(summary);
+    const timeline=element('section',undefined,'evidence-timeline');timeline.append(element('h3','What happened?'),element('p','Select a reading to inspect its evidence. Blue: observation · red: flagged pattern · outline: selected.','chart-caption'));body.append(timeline);
+    try {
+      const station=await get(`/api/stations/${encodeURIComponent(key)}`);
+      if(request!==selection)return;
+      const flags=[...new Set([...station.flagged_ids,...data.detectors.filter(d=>d.outcome==='FLAG'&&d.candidate_id).map(d=>d.candidate_id)])];
+      const choose=row=>{location.hash=`#/evidence/${key}?observation=${encodeURIComponent(row.observation_id)}`;};
+      const chart=drawHistory(station.plot_observations,flags,choose);
+      chart.querySelectorAll('circle').forEach(point=>point.classList.toggle('chart-selected',point.dataset.observation===data.observation?.observation_id));
+      const picker=element('select');picker.setAttribute('aria-label','Evidence timeline observation');
+      for(const row of station.plot_observations){const option=element('option',`${flags.includes(row.observation_id)?'FLAG · ':''}${row.raw_timestamp} · ${row.measurement_raw}`);option.value=row.observation_id;option.selected=row.observation_id===data.observation?.observation_id;picker.append(option);}
+      picker.addEventListener('change',()=>choose(station.plot_observations.find(row=>row.observation_id===picker.value)));
+      timeline.append(chart,picker,element('p',`${unitLabel(data.observation)}. Source timezone unverified; gaps are not joined.`,'chart-caption'));
+    } catch { timeline.append(element('p','Timeline unavailable. The evidence package remains available below.')); }
+
     const download=element('button','Download evidence JSON','export-button'); download.type='button';
     download.addEventListener('click',()=>{
       const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)+'\n'],{type:'application/json'}));
       const a=element('a');a.href=url;a.download=`jalsanket-${key}-evidence.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
-    });body.append(download);
+    });
     const strip = element("div", undefined, "observation-strip");
     for (const [label, value] of [
       [
-        `${data.provenance.data_mode === "SYNTHETIC_DEMONSTRATION" ? "SYNTHETIC VALUE" : "PROVIDER-NATIVE VALUE"} · ${unitLabel(data.observation)}`,
+        data.provenance.data_mode === "SYNTHETIC_DEMONSTRATION" ? "SYNTHETIC MEASUREMENT" : "REPORTED MEASUREMENT",
         data.observation?.measurement_raw ?? "Unavailable",
       ],
       [
@@ -120,30 +136,10 @@ async function selectStation(key, observationId) {
       strip.append(item);
     }
     body.append(strip);
-    const grid = element("div", undefined, "evidence-grid");
-    grid.append(
-      listBlock(
-        "SUPPORTING · CONFIGURED PATTERN",
-        data.supporting_evidence,
-        "No eligible pattern result.",
-      ),
-      listBlock(
-        "CONTRADICTING · OBSERVED COUNTEREVIDENCE",
-        data.contradicting_evidence,
-        "None established. Absence of counterevidence is not proof.",
-      ),
-      listBlock(
-        "UNAVAILABLE EVIDENCE",
-        data.unavailable_evidence,
-        "None recorded.",
-      ),
-      listBlock(
-        "LIMITATIONS & COMPETING EXPLANATIONS",
-        data.limitations,
-        "None recorded.",
-      ),
-    );
-    body.append(grid);
+    const support=element('section',undefined,'support-card');support.append(element('h3','What does the evidence support?'));
+    const patterns=data.detectors.filter(d=>d.outcome==='FLAG').map(d=>d.detector);
+    support.append(element('p',patterns.length ? `${patterns.join(', ')} pattern flagged for review. This is evidence to investigate, not a diagnosis.` : data.detectors.some(d=>d.outcome==='NO_FLAG') ? 'No configured pattern was flagged at this selection. That does not establish a healthy sensor or environmental change.' : 'The available history or metadata is insufficient to run an interpretable check.'));
+    const supportDetails=element('details');supportDetails.append(element('summary','Supporting evidence · detector details'),listBlock('Supporting evidence',data.supporting_evidence,'No eligible pattern result.'));support.append(supportDetails);body.append(support);
     const assessment = element("section", undefined, "assessment");
     assessment.append(
       element(
@@ -153,16 +149,23 @@ async function selectStation(key, observationId) {
           : data.assessment.replaceAll("_", " "),
       ),
       element("p", data.assessment_reason),
+      element("p", "Missing evidence: independent reference measurement and logger comparison. A pattern does not establish a physical cause."),
     );
     body.append(assessment);
     const next = element("section", undefined, "next-check");
+    next.id="recommended-verification";next.tabIndex=-1;
     next.append(
-      element("h3", "NEXT DISCRIMINATING CHECK"),
+      element("p", "WHAT SHOULD BE CHECKED NEXT?", "eyebrow"),
+      element("h3", "Recommended Verification"),
       element("strong", data.next_check.action),
       element("p", data.next_check.rationale),
       element("p", `Evidence gap: ${data.next_check.evidence_gap_addressed}`),
     );
     body.append(next);
+    const limits=element('section',undefined,'limitations-card');limits.append(element('h3','Keep in mind'));
+    for(const text of data.limitations.slice(0,3))limits.append(element('p',text));
+    const more=element('details');more.append(element('summary','More limitations and missing evidence'),listBlock('Technical limitations',data.limitations.slice(3),'No additional limitations.'),listBlock('Missing evidence',data.unavailable_evidence,'None recorded.'),listBlock('Contradicting evidence',data.contradicting_evidence,'None established. Absence of counterevidence is not proof.'));limits.append(more);body.append(limits);
+
     const quality = element("details", undefined, "details");
     quality.id = "quality";
     quality.append(element("summary", "Data quality & detector eligibility"));
@@ -241,7 +244,7 @@ async function selectStation(key, observationId) {
     table.append(rows);
     wrap.append(table);
     provenance.append(wrap);
-    body.append(provenance);
+    body.append(provenance,download);
     window.scrollTo(0,0);
   } catch (error) {
     if (request === selection) {
@@ -258,6 +261,7 @@ async function load() {
   try {
     const data = await get("/api/network");
     stations = data.stations;
+    dataMode=data.provenance.data_mode;
     evidenceCache={};
     await Promise.all(stations.map(async s=>{try{evidenceCache[s.station_group_key]=await get(`/api/stations/${s.station_group_key}/evidence`);}catch{evidenceCache[s.station_group_key]=null;}}));
     byId('review-window').textContent = `${data.window_start.slice(0,10)} → ${data.window_end_exclusive.slice(0,10)} (end exclusive)`;
@@ -289,6 +293,7 @@ async function load() {
       ...new Set(stations.map((station) => station.district)),
     ].join(" · ");
     renderQueue();
+    if(new URLSearchParams(location.search).get("demo")==="1" && dataMode==="SYNTHETIC_DEMONSTRATION" && !location.hash) startDemo();
   } catch (error) {
     stations = [];
     byId("queue-list").replaceChildren(
@@ -364,6 +369,11 @@ byId('anomaly-filter').value=filters.get('pattern') || '';
 byId("station-filter").addEventListener("input", renderQueue);
 for(const id of ['state-filter','anomaly-filter'])byId(id).addEventListener('change',renderQueue);
 byId('reset-filters').addEventListener('click',()=>{for(const id of ['station-filter','state-filter','anomaly-filter'])byId(id).value='';renderQueue();byId('station-filter').focus();});
-byId('guided-demo').addEventListener('click',()=>{if(stations.length)location.hash=`#/station/${stations.find(s=>evidenceCache[s.station_group_key]?.detectors.some(d=>d.outcome==='FLAG'))?.station_group_key || stations[0].station_group_key}`;});
+function startDemo(){
+  if(dataMode!=='SYNTHETIC_DEMONSTRATION'){location.href='http://127.0.0.1:8770/?demo=1';return;}
+  const demoStation=stations.find(s=>evidenceCache[s.station_group_key]?.detectors.some(d=>d.detector==='FLATLINE'&&d.outcome==='FLAG'));
+  if(demoStation)location.hash=`#/station/${demoStation.station_group_key}`;
+}
+byId('guided-demo').addEventListener('click',startDemo);
 byId("retry").addEventListener("click", () => load().then(route));
 load().then(route);

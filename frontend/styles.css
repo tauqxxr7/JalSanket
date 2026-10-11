@@ -587,3 +587,12 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
 @media(max-width:720px){.filter-bar{display:block}.filter-bar label,.filter-bar button{margin-top:12px}select{font-size:16px}.observation-strip{grid-template-columns:1fr}.history-chart{min-height:200px}}
 
 .chart-line { pointer-events:none; }
+
+.investigation-summary,.evidence-timeline,.support-card,.limitations-card {padding:20px 24px;border-bottom:1px solid #e0e0e0;}
+.investigation-summary {background:#edf5ff;}.investigation-summary p{margin:6px 0;}.investigation-summary .primary-action{margin-top:8px;}
+.evidence-timeline .history-chart {max-height:300px;}.support-card>p{max-width:85ch;}.support-card details{margin-top:12px;}
+.limitations-card>p {font-size:12px;line-height:1.5;margin:8px 0;max-width:90ch;}
+#recommended-verification {border-left:5px solid #0f62fe;background:#edf5ff;scroll-margin-top:16px;}
+#evidence-body summary {cursor:pointer;padding:10px 0;font-weight:600;}
+#evidence-body .export-button{margin-top:18px;}
+@media(max-width:720px){.investigation-summary,.evidence-timeline,.support-card,.limitations-card{padding:16px}.evidence-timeline .history-chart{min-height:180px}.observation-strip strong{overflow-wrap:anywhere}}
