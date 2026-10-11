@@ -1,3 +1,31 @@
+# Current release verification — October 11, 2026
+
+This section supersedes all older counts, Git/AWS status and blockers below. Older sections are retained only as a dated audit history.
+
+| Check | Result and scope |
+|---|---|
+| Backend | PASS: 55 tests in 5.80s; one Starlette/HTTPX deprecation warning |
+| Frontend | PASS: six Node tests, syntax check and production build (9 files) |
+| Official journey | PASS in fresh in-app browser: Network, Ambhasi search, FLATLINE no-match filter, reset, Station, selected Evidence, UNCERTAIN/ABSTAIN and Recommended Verification |
+| Timeline | PASS: earliest official observation updates to INSUFFICIENT_EVIDENCE; synthetic flag supports TELEMETRY_EVIDENCE |
+| Provenance/export | PASS: source rows expanded; downloaded official JSON equals exact selected-observation API response |
+| Labels/layout | PASS: historical/not-live and synthetic labels; unverified datum/timezone; October 11 desktop 1440px/mobile 390px checks had no horizontal overflow |
+| Standalone Playwright | BLOCKED earlier by Chrome Crashpad/pipe startup; not claimed passed or rerun this documentation cycle |
+| SAM | PASS locally: CLI 1.168.0 template lint, Python 3.12 package build, 3 real-data artifact routes plus 404 using local S3 test double |
+| Cloud | NOT VERIFIED: no verified S3 upload, Lambda/API Gateway deployment, CloudFront/public URL or cloud log proof |
+
+Entry HEAD e9c6dc8 was four commits ahead. Direct `git ls-remote` returned remote main b2576fad7ca1500299b505da9595868033880b15. No authentication or AWS mutation was performed.
+
+Both documented startup commands succeeded during October 11 verification: `./scripts/start-local.ps1 -Port 8768` and, separately, `.venv/Scripts/python.exe -m uvicorn scripts.synthetic_demo_app:app --host 127.0.0.1 --port 8770`. Keep both terminals open. Dependencies, pinned raw CSV/manifest and evaluation/results.json must exist. No secret environment variables or Node server are required for local analytics. Closing the server terminal causes connection refusal. See README for first-time setup.
+
+The 150-case evaluation is the committed October 10 reproduction, not a new release-day rerun. Official FLATLINE/DROPOUT stay unavailable without verified metadata; all five groups remain UNCERTAIN. Screenshots in docs/images depict explicitly synthetic FLATLINE, not actual incidents.
+
+Cloud work still requires approved non-root access and verified budget. The handler needs private S3 object reads and CloudWatch logging; deployment would additionally need scoped CloudFormation/Lambda/API Gateway/CloudFront permissions and restricted IAM PassRole. No provisioning is authorized. SAM packaging is not Docker runtime execution; the draft handler lacks selected-observation routing. Owner must confirm organizer acceptance of local SAM use, push, record and submit.
+
+---
+
+# Historical records (superseded)
+
 # October 9 P0 verification update
 
 Final backend run: **46 passed**, one dependency warning, 8.31 seconds. Production build and JS syntax pass; npm audit reports zero vulnerabilities.

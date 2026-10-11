@@ -6,3 +6,5 @@
 - OpenAI Codex and Figma MCP assistance: see AI_USAGE.md. No competitor implementation was copied.
 
 - AWS SAM CLI: AWS open-source serverless validation/build tooling, Apache-2.0; https://github.com/aws/aws-sam-cli. Used locally to build the existing Lambda handler, with no cloud deployment claimed. Version pinned in requirements-sam.txt.
+
+- README screenshots: captured from the local JalSanket application on October 11, 2026. Both show explicitly synthetic FLATLINE modifications on attributed historical telemetry; neither depicts a verified physical sensor incident or cloud deployment.

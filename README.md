@@ -1,6 +1,6 @@
 # JalSanket
 
-Current local milestone (October 10): dedicated Network → Station → Evidence routes; SPIKE on official data; FLATLINE/DROPOUT implementations with explicit metadata gates; four-state triage policy and NextCheck. FLATLINE/DROPOUT remain UNAVAILABLE on the current official snapshot. Controlled Q2 synthetic-pattern evaluation is recorded; no AWS cloud deployment is claimed.
+Release freeze (October 11): dedicated Network → Station → Evidence routes; SPIKE on official data; FLATLINE/DROPOUT implementations with explicit metadata gates; four-state triage policy and NextCheck. FLATLINE/DROPOUT remain UNAVAILABLE on the current official snapshot. Controlled Q2 synthetic-pattern evaluation is recorded; no AWS cloud deployment is claimed.
 
 Start both frontend and API from a terminal you keep open: `./scripts/start-local.ps1` (http://127.0.0.1:8766/). The static frontend uses the same FastAPI server; no second Node server is required. See [current verification](docs/VERIFICATION.md) and [AWS owner setup and deployment sequence](docs/AWS-ACCESS.md).
 
@@ -9,6 +9,37 @@ Start both frontend and API from a terminal you keep open: `./scripts/start-loca
 A working local first slice for Environmental Hacks, October 8–11, 2026. It preserves official provider measurements, screens eligible same-station sequences, exposes evidence gaps, abstains from unsupported causes and suggests a next discriminating check.
 
 **This is not a diagnosis of physical sensor failure.** No AWS deployment or real sensor-failure accuracy is claimed.
+
+## Screenshots from the working local app
+
+Captured October 11 from real local API responses. **SYNTHETIC DEMONSTRATION:** these images show a controlled FLATLINE injection, not an actual CGWB incident, live feed or deployed AWS application.
+
+![Desktop Evidence Trail: labelled synthetic pattern, uncertainty and recommended verification](docs/images/refined-evidence-desktop.jpg)
+
+<details>
+<summary>Mobile Evidence Trail (390px viewport)</summary>
+
+![Mobile Evidence Trail with synthetic label and accessible observation selector](docs/images/refined-evidence-mobile.jpg)
+
+</details>
+
+## 90-second demo startup
+
+With dependencies and the pinned source CSV available, keep these **two PowerShell terminals** open from the repository root:
+
+```powershell
+# Terminal 1: official historical frontend + API
+.\scripts\start-local.ps1 -Port 8768
+```
+
+```powershell
+# Terminal 2: separately labelled synthetic FLATLINE frontend + API
+.\.venv\Scripts\python.exe -m uvicorn scripts.synthetic_demo_app:app --host 127.0.0.1 --port 8770
+```
+
+Open http://127.0.0.1:8768/ and click **Start 90-second synthetic demo**. Select **Inspect FLATLINE pattern → Inspect Selected Evidence**, review uncertainty and **Recommended Verification**, then export JSON. First-time acquisition instructions are below; do not reacquire during a prepared recording unless the source is missing.
+
+[Submission summary](docs/SUBMISSION-README.md) · [Video storyboard](docs/VIDEO-STORYBOARD.md) · [Owner checklist](docs/FINAL-CHECKLIST.md)
 
 ## Current status
 
@@ -20,7 +51,7 @@ A working local first slice for Environmental Hacks, October 8–11, 2026. It pr
 | SYNTHETIC | Reproducible controlled anomaly injections on Q2 official historical sequences; separate labelled demonstration app |
 | ROADMAP | Submission demo and, only with separate authorization, cloud deployment |
 
-No forecasting, chatbot, map, Bedrock or extra detectors. Flatline/dropout explicitly report UNAVAILABLE / NOT_RUN. All five current assessments are UNCERTAIN; absence of a flag is not environmental evidence.
+No forecasting, chatbot, map or Bedrock. SPIKE, FLATLINE and DROPOUT are implemented; flatline/dropout explicitly report UNAVAILABLE / NOT_RUN on the official snapshot because required metadata is unverified. All five current assessments are UNCERTAIN; absence of a flag is not environmental evidence.
 
 ## Run locally
 
@@ -53,15 +84,15 @@ The standalone Playwright launch was blocked by this session's Windows subproces
 Official CGWB/NWDP CSV
   → operator acquisition script → local raw CSV + manifest
   → checksum-validated provider → Pydantic observations
-  → scoped quality → per-observation eligibility → spike-candidate screening
+  → scoped quality → per-observation eligibility → SPIKE / FLATLINE / DROPOUT (metadata-gated)
   → deterministic EvidencePackage → FastAPI → static HTML/CSS/JS
 ```
 
 Data and evidence are loaded once at API startup; requests serve the pinned in-memory result. Restart after acquisition or backend changes. This is a local prototype with five groups and a fixed window, not a live ingestion service.
 
-Read routes: `/api/health`, `/api/network`, `/api/stations/{station_group_key}`, `/api/stations/{station_group_key}/evidence`. Unknown IDs return 404; unsupported query parameters 422; missing/corrupt data 503. Pydantic schemas are exposed at `/docs`. There are no public writes, provider URL inputs, upload endpoints or credentials in the browser. Same-origin frontend/API requires no permissive CORS.
+Read routes: `/api/health`, `/api/network`, `/api/stations/{station_group_key}`, `/api/stations/{station_group_key}/evidence`, `/api/stations/{station_group_key}/observations/{observation_id}/evidence`. Unknown IDs return 404; unsupported query parameters 422; missing/corrupt data 503. Pydantic schemas are exposed at `/docs`. There are no public writes, provider URL inputs, upload endpoints or credentials in the browser. Same-origin frontend/API requires no permissive CORS.
 
-**Actual AWS usage: none yet.** Planned after account/budget approval: bounded ingestion/analysis on Lambda, private S3 snapshots/assets, API Gateway, CloudFront and CloudWatch. No deployable infrastructure or paid resource has been created. College-email console access does not establish permission, credits or a region. See [task board](docs/TASK-BOARD.md).
+**AWS cloud usage: not verified; no deployment claimed.** AWS SAM CLI is genuinely used locally for template validation, packaging and built-handler contract verification (see below). Infrastructure templates exist; they are not deployed. No verified S3 upload or public hosting is evidenced in this release audit. Future cloud use requires account/budget approval. College-email console access does not establish permission, credits or a region. See [task board](docs/TASK-BOARD.md).
 
 ## Data provenance and science
 
@@ -112,12 +143,12 @@ python -m venv .sam-venv
 .\scripts\start-local.ps1 -Port 8768
 ```
 
-Open http://127.0.0.1:8768/ and select a station, View Evidence, then read Next Discriminating Check. The API and UI share this origin; no CORS exception is needed. SAM verification makes no cloud resource calls; do not run deploy commands without separate approval. Generated packages, environments and exported data stay ignored. The committed evaluation JSON is a reproducible scientific result, not a deployment bundle.
+Open http://127.0.0.1:8768/ and select a station, View Evidence, then read Recommended Verification. The API and UI share this origin; no CORS exception is needed. SAM verification makes no cloud resource calls; do not run deploy commands without separate approval. Generated packages, environments and exported data stay ignored. The committed evaluation JSON is a reproducible scientific result, not a deployment bundle.
 
 ## Interactive investigation (October 10)
 
 Station Explorer supports name/internal-identifier search, combined evidence-state and actual flagged-pattern filters, result count, reset and shareable URL parameters. Missing pattern evidence is disclosed. The timeline supports mouse/keyboard selection and an accessible observation selector; gaps stay open. A new additive observation-evidence route returns the exact selected record, preserving existing aggregate endpoints and conservative triage. Window-wide summaries are explicitly separate from selected-observation evidence.
 
-The Evidence-to-Action panel connects observed values, support, quality, interpretation and NextCheck. Provenance distinguishes source time, retrieval time, unavailable export time, provider-declared units and unverified datum. JSON download serializes the displayed evidence package exactly. The guided entry uses real official data; flagged FLATLINE demonstration is a separate, clearly synthetic app. No scientific thresholds or Figma visual direction changed.
+The Evidence-to-Action panel connects observed values, support, quality, interpretation and NextCheck. Provenance distinguishes source time, retrieval time, unavailable export time, provider-declared units and unverified datum. JSON download serializes the displayed evidence package exactly. The one-click guided entry opens the separate, explicitly synthetic FLATLINE app on port 8770; official historical observations remain unchanged. No scientific thresholds or Figma visual direction changed.
 
 See the [90-second judge walkthrough](docs/JUDGE-WALKTHROUGH.md) for startup, demo steps, limitations and verification. Checks: `python -m pytest -q` inside the project virtual environment; `npm run test:ui`; `npm run check`; `npm run build`. Standalone browser runner: `npm run test:investigation` (Chrome required; process launch is blocked in this Codex sandbox). The in-app browser journey was separately exercised successfully. Cloud deployment remains absent; the draft Lambda adapter supports aggregate endpoints only, not the new per-observation route.
