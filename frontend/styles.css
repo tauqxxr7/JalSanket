@@ -596,3 +596,20 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
 #evidence-body summary {cursor:pointer;padding:10px 0;font-weight:600;}
 #evidence-body .export-button{margin-top:18px;}
 @media(max-width:720px){.investigation-summary,.evidence-timeline,.support-card,.limitations-card{padding:16px}.evidence-timeline .history-chart{min-height:180px}.observation-strip strong{overflow-wrap:anywhere}}
+
+/* Brief user-action feedback; no looping, geometry motion or animation library. */
+@media (prefers-reduced-motion: no-preference) {
+  .queue-row, .filter-bar button, .primary-action, details summary {
+    transition: background-color 120ms ease-out, border-color 120ms ease-out;
+  }
+  .history-chart circle {transition: r 120ms ease-out, stroke-width 120ms ease-out;}
+  #selection-panel > h2, .investigation-summary > p, details[open] > :not(summary) {
+    animation: evidence-reveal 120ms ease-out;
+  }
+  @keyframes evidence-reveal {from {opacity:.7;} to {opacity:1;}}
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {animation:none !important;transition:none !important;scroll-behavior:auto !important;}
+}
+details summary:hover, details summary:focus-visible {background:#edf5ff;}
+#guided-demo {border:1px solid #0f62fe;background:#0f62fe;color:white;padding:12px 16px;cursor:pointer;}

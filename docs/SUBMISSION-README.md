@@ -37,3 +37,9 @@ Recorded controlled evaluation: 150 cases across 25 Q2 windows. SPIKE/FLATLINE/D
 Official FLATLINE/DROPOUT remain unavailable without required verified metadata; all five official assessments are UNCERTAIN. No forecasting, chatbot, maps or Bedrock.
 
 Repository: https://github.com/tauqxxr7/JalSanket — owner must push release commits. Video: not supplied. Public deployment: none verified. [AI disclosure](AI_USAGE.md) · [Verification](VERIFICATION.md).
+
+## Final AWS evidence status — October 11
+
+Owner reports 11 evidence JSON snapshots uploaded to `jalsanket-evidence-2026-tauq` in `ap-southeast-2`. This session could not independently list/read them: AWS CLI STS returned `NoCredentials`. Public accessibility is not assumed. The running FastAPI application uses local CSVProvider, not S3. Therefore the reported S3 upload is an isolated evidence store, not a deployed application backend. The draft Lambda handler can read S3 but is not verified deployed and lacks selected-observation routing.
+
+Local SAM validation/build and test-double contracts are verified; they alone do not establish compliance with the current rule requiring AWS use shown in the video. AWS eligibility remains unresolved until the owner demonstrates existing S3 objects and obtains any necessary organizer clarification. No uploads, IAM changes or deployments were performed. See [AWS demonstration steps](AWS-DEMO-EVIDENCE.md).

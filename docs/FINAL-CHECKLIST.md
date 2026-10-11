@@ -37,3 +37,11 @@ git ls-remote origin refs/heads/main
 The final two SHAs must match. If rejected, stop and inspect remote changes; never force-push or discard work. Authenticate only in your own terminal if required, without sharing tokens.
 
 **CONDITIONAL GO:** local demo is ready; owner push, video, eligibility/tooling acceptance and submission remain outstanding.
+
+## Final AWS evidence status — October 11
+
+Owner reports 11 evidence JSON snapshots uploaded to `jalsanket-evidence-2026-tauq` in `ap-southeast-2`. This session could not independently list/read them: AWS CLI STS returned `NoCredentials`. Public accessibility is not assumed. The running FastAPI application uses local CSVProvider, not S3. Therefore the reported S3 upload is an isolated evidence store, not a deployed application backend. The draft Lambda handler can read S3 but is not verified deployed and lacks selected-observation routing.
+
+Local SAM validation/build and test-double contracts are verified; they alone do not establish compliance with the current rule requiring AWS use shown in the video. AWS eligibility remains unresolved until the owner demonstrates existing S3 objects and obtains any necessary organizer clarification. No uploads, IAM changes or deployments were performed. See [AWS demonstration steps](AWS-DEMO-EVIDENCE.md).
+
+Final freeze checks: 55 backend and nine frontend tests pass; syntax/build pass. AWS CLI is installed but has no credentials. Both local network endpoints return actual data. Latest local commit must be pushed after this audit; verify remote refs.

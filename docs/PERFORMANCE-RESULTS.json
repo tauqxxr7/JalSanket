@@ -1,0 +1,81 @@
+{
+  "before_commit": "c8775ac",
+  "before": {
+    "scope": "five sequential API reads, five fresh readers, local warm server; no browser rendering metric",
+    "sequence": [
+      "/api/stations/group-540acb3b92fe6e39",
+      "/api/stations/group-540acb3b92fe6e39/evidence",
+      "/api/stations/group-540acb3b92fe6e39/observations/nwdp-cb74716463c3eba8%3Arow%3A19345/evidence",
+      "/api/stations/group-540acb3b92fe6e39/observations/nwdp-cb74716463c3eba8%3Arow%3A19345/evidence",
+      "/api/stations/group-540acb3b92fe6e39"
+    ],
+    "runs": [
+      {
+        "requests": 5,
+        "responseBytes": 759916,
+        "elapsedMs": 108.14
+      },
+      {
+        "requests": 5,
+        "responseBytes": 759916,
+        "elapsedMs": 75.93
+      },
+      {
+        "requests": 5,
+        "responseBytes": 759916,
+        "elapsedMs": 82.54
+      },
+      {
+        "requests": 5,
+        "responseBytes": 759916,
+        "elapsedMs": 206.87
+      },
+      {
+        "requests": 5,
+        "responseBytes": 759916,
+        "elapsedMs": 58.3
+      }
+    ],
+    "medianMs": 82.54,
+    "buildBytes": 53355
+  },
+  "after": {
+    "scope": "five sequential API reads, five fresh readers, local warm server; no browser rendering metric",
+    "sequence": [
+      "/api/stations/group-540acb3b92fe6e39",
+      "/api/stations/group-540acb3b92fe6e39/evidence",
+      "/api/stations/group-540acb3b92fe6e39/observations/nwdp-cb74716463c3eba8%3Arow%3A19345/evidence",
+      "/api/stations/group-540acb3b92fe6e39/observations/nwdp-cb74716463c3eba8%3Arow%3A19345/evidence",
+      "/api/stations/group-540acb3b92fe6e39"
+    ],
+    "runs": [
+      {
+        "requests": 3,
+        "responseBytes": 390820,
+        "elapsedMs": 133.12
+      },
+      {
+        "requests": 3,
+        "responseBytes": 390820,
+        "elapsedMs": 117.42
+      },
+      {
+        "requests": 3,
+        "responseBytes": 390820,
+        "elapsedMs": 78.54
+      },
+      {
+        "requests": 3,
+        "responseBytes": 390820,
+        "elapsedMs": 82.16
+      },
+      {
+        "requests": 3,
+        "responseBytes": 390820,
+        "elapsedMs": 105.8
+      }
+    ],
+    "medianMs": 105.8,
+    "buildBytes": 55214
+  }
+}

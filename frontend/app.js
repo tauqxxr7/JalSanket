@@ -9,14 +9,14 @@ const element = (tag, text, className) => {
 let evidenceCache = {}, dataMode = "";
 let stations = [],
   selection = 0;
-async function get(path) {
+const get = createSnapshotReader(async function(path) {
   const response = await fetch(path, { signal: AbortSignal.timeout(15000) });
   if (!response.ok)
     throw new Error(
       `Evidence API returned ${response.status}. Request ${response.headers.get("X-Request-ID") || "unavailable"}.`,
     );
   return response.json();
-}
+});
 function listBlock(title, items, empty) {
   const section = element("section");
   section.append(element("h3", title));
@@ -257,6 +257,7 @@ async function selectStation(key, observationId) {
   }
 }
 async function load() {
+  get.clear();
   byId("error").hidden = true;
   try {
     const data = await get("/api/network");

@@ -8,3 +8,22 @@ test('clear filters restores count',()=>assert.equal(filterStations(rows,'','','
 test('missing evidence never fabricates a pattern',()=>assert.equal(filterStations(rows,'','','SPIKE',{}).length,0));
 test('unknown units are explicit',()=>assert.equal(unitLabel(null),'Units and datum unavailable'));
 test('declared units preserve uncertainty',()=>assert.match(unitLabel({declared_unit:'meter'}),/datum unverified/));
+
+const {createSnapshotReader}=require('../frontend/explorer.js');
+test('snapshot requests deduplicate including concurrent reads',async()=>{
+ let calls=0;const get=createSnapshotReader(async()=>({count:++calls}));
+ const [a,b]=await Promise.all([get('/api/stations/a'),get('/api/stations/a')]);
+ assert.deepEqual(a,b);assert.equal(calls,1);
+});
+test('expiry, retry clear and bounded eviction refresh data',async()=>{
+ let time=0,calls=0;const get=createSnapshotReader(async()=>++calls,()=>time,2,30);
+ await get('/api/stations/a');time=31;assert.equal(await get('/api/stations/a'),2);
+ await get('/api/stations/b');await get('/api/stations/c');assert.equal(await get('/api/stations/a'),5);
+ get.clear();assert.equal(await get('/api/stations/a'),6);
+});
+test('failures and network status are not retained',async()=>{
+ let calls=0;const get=createSnapshotReader(async()=>{if(++calls===1)throw Error('offline');return calls;});
+ await assert.rejects(get('/api/stations/a'),/offline/);
+ assert.equal(await get('/api/stations/a'),2);
+ await get('/api/network');await get('/api/network');assert.equal(calls,4);
+});

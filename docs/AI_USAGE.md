@@ -11,3 +11,5 @@ Pre-event planning/research existed and is explicitly distinguished from new Oct
 2026-10-10: Codex assisted with Station Explorer, observation-specific evidence routing, accessible timeline interactions, exact JSON export, provenance copy and judge-demo verification. Deterministic analytics remain responsible for assessments; no generated explanation model was added.
 
 2026-10-11: Codex assisted with progressive disclosure, guided synthetic demonstration, release QA, README screenshots and submission documentation. Screenshots capture the local application; no generated illustration is presented as a product screenshot. Human owner review and submission remain required.
+
+Final release: Codex assisted with bounded historical-response caching, reduced-motion CSS, focused tests, measured local request benchmark and submission wording. Brag was reviewed as a reference only; no video skill was installed and no video was generated.
